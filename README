@@ -1,0 +1,108 @@
+# Leapfrog Connect LMS — Setup Guide
+
+## Project Structure
+
+```
+lms_project/
+├── backend/          ← Django + DRF + JWT
+│   ├── api/          ← All models, views, serializers, urls
+│   ├── core/         ← settings.py, core/urls.py
+│   ├── manage.py
+│   └── requirements.txt
+└── lms-frontend/     ← React + Vite + Tailwind
+    └── src/
+        ├── pages/
+        ├── components/
+        ├── layout/
+        ├── services/
+        └── context/
+```
+
+---
+
+## Backend Setup
+
+```bash
+cd backend
+
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Make and run migrations
+python manage.py makemigrations
+python manage.py migrate
+
+# 3. Create superuser (already done: kapil@gmail.com / kapil123)
+python manage.py createsuperuser
+
+# 4. Seed demo courses, lessons, quizzes and jobs
+# Just call the endpoint once after starting the server:
+# POST http://127.0.0.1:8000/api/seed/
+
+# 5. Run server
+python manage.py runserver
+```
+
+---
+
+## Frontend Setup
+
+```bash
+cd lms-frontend
+
+# 1. Install dependencies
+npm install
+
+# 2. Start dev server
+npm run dev
+```
+
+---
+
+## First Run Checklist
+
+1. Start Django: `python manage.py runserver`
+2. Seed data: `POST http://127.0.0.1:8000/api/seed/` (use Postman or browser)
+3. Start React: `npm run dev`
+4. Open browser: `http://localhost:5173`
+5. Login: `kapil@gmail.com` / `kapil123`
+
+---
+
+## Key API Endpoints
+
+| Method | URL                              | Auth | Description                     |
+| ------ | -------------------------------- | ---- | ------------------------------- |
+| POST   | /api/token/                      | ❌   | Login (get JWT)                 |
+| POST   | /api/register/                   | ❌   | Register                        |
+| GET    | /api/courses/                    | ❌   | List all courses                |
+| GET    | /api/courses/:id/                | ❌   | Course detail + lessons         |
+| POST   | /api/enroll/                     | ✅   | Enroll in course                |
+| GET    | /api/my-courses/                 | ✅   | My enrolled courses             |
+| POST   | /api/complete-lesson/            | ✅   | Mark lesson done                |
+| GET    | /api/lesson-progress/:course_id/ | ✅   | Get completed lessons           |
+| GET    | /api/quiz/:course_id/            | ✅   | Get quiz (must complete course) |
+| POST   | /api/quiz/:quiz_id/submit/       | ✅   | Submit quiz answers             |
+| GET    | /api/my-certificates/            | ✅   | My earned certificates          |
+| GET    | /api/jobs/                       | ❌   | List jobs                       |
+| POST   | /api/apply/                      | ✅   | Apply for a job                 |
+| GET    | /api/my-applications/            | ✅   | My job applications             |
+| GET    | /api/profile/                    | ✅   | Get profile                     |
+| PUT    | /api/update-profile/             | ✅   | Update profile                  |
+| GET    | /api/dashboard-stats/            | ✅   | Dashboard stats                 |
+| POST   | /api/seed/                       | ❌   | Seed demo data                  |
+
+---
+
+## Superuser Login
+
+- **Email:** kapil@gmail.com
+- **Password:** kapil123
+- **Admin panel:** http://127.0.0.1:8000/admin/
+
+## Database
+
+- **Name:** lms_db
+- **User:** postgres
+- **Password:** kapil
+- **Host:** localhost:5432
