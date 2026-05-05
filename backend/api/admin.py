@@ -1,16 +1,3 @@
-# from django.contrib import admin
-
-# # Register your models here.
-# from django.contrib import admin
-# from .models import User, Course, Enrollment, Job, Application
-
-# admin.site.register(User)
-# admin.site.register(Course)
-# admin.site.register(Enrollment)
-# admin.site.register(Job)
-# admin.site.register(Application)
-
-
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin

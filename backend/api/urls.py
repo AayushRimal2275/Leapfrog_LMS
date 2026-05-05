@@ -1,20 +1,3 @@
-# from django.urls import path
-# from .views import test,get_courses, get_jobs, get_profile,register,apply_job,enroll_course, my_courses,my_applications,update_profile
-
-# urlpatterns = [
-#     path('test/', test),
-#     path('courses/', get_courses),
-#     path('jobs/', get_jobs),
-#     path('profile/', get_profile),
-#     path('register/', register),
-#      path('apply/', apply_job),
-#       path('enroll/', enroll_course),
-#           path('my-courses/', my_courses),
-#           path('my-applications/', my_applications),
-#           path('update-profile/', update_profile),
-# ]
-
-
 
 
 from django.urls import path
