@@ -97,6 +97,12 @@ function AppCard({ app }) {
         <Icon size={11} />
         {stage.label}
       </div>
+      {app.updated_at && app.status !== "applied" && (
+        <p className="text-[#585b70] text-[10px] mt-1.5 flex items-center gap-1">
+          <Clock size={9} /> Status updated{" "}
+          {new Date(app.updated_at).toLocaleDateString()}
+        </p>
+      )}
     </div>
   );
 }

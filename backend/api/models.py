@@ -1,20 +1,32 @@
-
-
-
+import json
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-import json
 
+
+# ─────────────────────────────────────────────
+# USER
+# ─────────────────────────────────────────────
 
 class User(AbstractUser):
+    ROLE_CHOICES = (
+        ('customer', 'Customer'),
+        ('admin', 'Admin'),
+        ('hr', 'HR'),
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='customer')
+
+    # Profile fields
     bio = models.TextField(blank=True, default="")
     avatar = models.URLField(blank=True, default="")
-    skills = models.TextField(blank=True, default="[]")  # JSON list as text
+    skills = models.TextField(blank=True, default="[]")  # JSON list
     headline = models.CharField(max_length=255, blank=True, default="")
     location = models.CharField(max_length=255, blank=True, default="")
     github = models.URLField(blank=True, default="")
     linkedin = models.URLField(blank=True, default="")
     website = models.URLField(blank=True, default="")
+
+    # Gamification
     streak = models.IntegerField(default=0)
     last_active = models.DateField(null=True, blank=True)
 
@@ -27,9 +39,16 @@ class User(AbstractUser):
     def set_skills_list(self, lst):
         self.skills = json.dumps(lst)
 
+    def __str__(self):
+        return f"{self.username} ({self.role})"
+
+
+# ─────────────────────────────────────────────
+# COURSE & LESSONS
+# ─────────────────────────────────────────────
 
 class CourseCategory(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
@@ -48,8 +67,11 @@ class Course(models.Model):
     duration = models.CharField(max_length=100, blank=True, default="")
     category = models.ForeignKey(CourseCategory, null=True, blank=True, on_delete=models.SET_NULL)
     tags = models.TextField(blank=True, default="[]")  # JSON list
-    created_at = models.DateTimeField(auto_now_add=True)
     is_featured = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_courses')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -76,10 +98,14 @@ class Lesson(models.Model):
         return f"{self.course.title} - {self.title}"
 
 
+# ─────────────────────────────────────────────
+# ENROLLMENT & PROGRESS
+# ─────────────────────────────────────────────
+
 class Enrollment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    progress = models.IntegerField(default=0)  # percentage 0-100
+    progress = models.IntegerField(default=0)  # 0-100
     enrolled_at = models.DateTimeField(auto_now_add=True)
     completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -88,7 +114,7 @@ class Enrollment(models.Model):
         unique_together = ('user', 'course')
 
     def __str__(self):
-        return f"{self.user.username} - {self.course.title}"
+        return f"{self.user.username} → {self.course.title}"
 
 
 class LessonProgress(models.Model):
@@ -100,6 +126,10 @@ class LessonProgress(models.Model):
     class Meta:
         unique_together = ('user', 'lesson')
 
+
+# ─────────────────────────────────────────────
+# QUIZ & CERTIFICATES
+# ─────────────────────────────────────────────
 
 class Quiz(models.Model):
     course = models.OneToOneField(Course, on_delete=models.CASCADE, related_name='quiz')
@@ -123,7 +153,7 @@ class Question(models.Model):
     option_b = models.CharField(max_length=500, blank=True)
     option_c = models.CharField(max_length=500, blank=True)
     option_d = models.CharField(max_length=500, blank=True)
-    correct_answer = models.CharField(max_length=1, blank=True)  # A/B/C/D for MCQ
+    correct_answer = models.CharField(max_length=1, blank=True)  # A/B/C/D
     order = models.IntegerField(default=0)
 
     class Meta:
@@ -155,6 +185,10 @@ class Certificate(models.Model):
         return f"Cert: {self.user.username} - {self.course.title}"
 
 
+# ─────────────────────────────────────────────
+# JOBS & APPLICATIONS
+# ─────────────────────────────────────────────
+
 class Job(models.Model):
     TYPE_CHOICES = [
         ('full-time', 'Full Time'),
@@ -171,8 +205,10 @@ class Job(models.Model):
     job_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='full-time')
     salary_range = models.CharField(max_length=100, blank=True, default="")
     required_certificate = models.ForeignKey(Course, null=True, blank=True, on_delete=models.SET_NULL)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_jobs')
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -185,14 +221,19 @@ class Application(models.Model):
         ('hired', 'Hired'),
         ('rejected', 'Rejected'),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
-    applied_at = models.DateTimeField(auto_now_add=True)
     cover_letter = models.TextField(blank=True, default="")
+    applied_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    reviewed_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_applications'
+    )
+    hr_notes = models.TextField(blank=True, default="")  # Internal HR notes
 
     class Meta:
         unique_together = ('user', 'job')
 
     def __str__(self):
-        return f"{self.user.username} - {self.job.title}"
+        return f"{self.user.username} → {self.job.title} [{self.status}]"

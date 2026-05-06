@@ -17,19 +17,17 @@ export default function Login() {
     if (!email || !password) return toast.error("Fill in all fields");
     setLoading(true);
     try {
-      // 1. Get the JWT token
       const res = await api.post("/token/", { username: email, password });
-
-      // 2. Store token + fetch user via context (atomic — user is set BEFORE navigate)
-      await login(res.data.access);
+      const user = await login(res.data.access); // returns user object
 
       toast.success("Welcome back!");
 
-      // 3. Now navigate — PrivateRoute will see the token AND the user is ready
-      navigate("/", { replace: true });
+      // Redirect based on role
+      if (user?.role === "admin") navigate("/admin", { replace: true });
+      else if (user?.role === "hr") navigate("/hr", { replace: true });
+      else navigate("/", { replace: true });
     } catch (err) {
-      const detail = err.response?.data?.detail;
-      toast.error(detail || "Invalid credentials");
+      toast.error(err.response?.data?.detail || "Invalid credentials");
     } finally {
       setLoading(false);
     }
@@ -37,7 +35,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#11111b] flex animate-fade-in">
-      {/* ── Left panel ── */}
+      {/* Left panel */}
       <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-[#1e1e2e] to-[#181825] p-12 border-r border-[#313244]">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#cba6f7] to-[#89b4fa] flex items-center justify-center">
@@ -77,7 +75,7 @@ export default function Login() {
         </p>
       </div>
 
-      {/* ── Right panel ── */}
+      {/* Right panel */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
           <div className="mb-8">
@@ -85,10 +83,13 @@ export default function Login() {
             <p className="text-[#9399b2] text-sm">
               Enter your credentials to continue
             </p>
+            <p className="text-[#585b70] text-xs mt-2">
+              You'll be redirected to your dashboard based on your role
+              (Customer / HR / Admin).
+            </p>
           </div>
 
           <div className="space-y-4">
-            {/* Email */}
             <div>
               <label className="block text-xs text-[#9399b2] mb-1.5 font-medium">
                 Email
@@ -104,13 +105,12 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                   className="w-full bg-[#1e1e2e] border border-[#313244] rounded-xl pl-9 pr-4 py-3 text-sm text-[#cdd6f4] placeholder-[#45475a] focus:outline-none focus:border-[#cba6f7] transition"
-                  placeholder="kapil@gmail.com"
+                  placeholder="you@example.com"
                   autoComplete="email"
                 />
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-xs text-[#9399b2] mb-1.5 font-medium">
                 Password
@@ -139,7 +139,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Submit */}
             <button
               onClick={handleLogin}
               disabled={loading}

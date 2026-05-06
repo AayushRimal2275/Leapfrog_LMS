@@ -1,10 +1,14 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function PrivateRoute({ children }) {
-  const { loading } = useAuth();
+/**
+ * PrivateRoute
+ * - No token → redirect to /login
+ * - allowedRoles provided → redirect if user's role isn't in the list
+ */
+export default function PrivateRoute({ children, allowedRoles }) {
+  const { loading, user } = useAuth();
 
-  // Still restoring session from localStorage → show spinner
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#11111b]">
@@ -16,11 +20,15 @@ export default function PrivateRoute({ children }) {
     );
   }
 
-  // After loading: gate on token only.
-  // user state in AuthContext is populated before navigate() fires (via login()),
-  // so there's no race between "token set" and "user null".
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/login" replace />;
+
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    // Redirect to the correct home for their role
+    const roleHome =
+      user.role === "admin" ? "/admin" : user.role === "hr" ? "/hr" : "/";
+    return <Navigate to={roleHome} replace />;
+  }
 
   return children;
 }

@@ -1,19 +1,20 @@
-
-        
-
-
 import json
 from rest_framework import serializers
 from .models import (
-    Course, Job, User, Enrollment, Lesson, LessonProgress,
-    Quiz, Question, QuizAttempt, Certificate, Application, CourseCategory
+    User, CourseCategory, Course, Lesson, LessonProgress,
+    Enrollment, Quiz, Question, QuizAttempt, Certificate,
+    Job, Application
 )
 
+
+# ─────────────────────────────────────────────
+# SHARED / BASE
+# ─────────────────────────────────────────────
 
 class CourseCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseCategory
-        fields = '__all__'
+        fields = ['id', 'name']
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -23,9 +24,17 @@ class LessonSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
+    """Questions shown to students — no correct_answer exposed."""
     class Meta:
         model = Question
         fields = ['id', 'text', 'question_type', 'option_a', 'option_b', 'option_c', 'option_d', 'order']
+
+
+class QuestionAdminSerializer(serializers.ModelSerializer):
+    """Full question data for admin — includes correct_answer."""
+    class Meta:
+        model = Question
+        fields = '__all__'
 
 
 class QuizSerializer(serializers.ModelSerializer):
@@ -36,17 +45,27 @@ class QuizSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'time_limit_minutes', 'pass_percentage', 'questions']
 
 
-class CourseSerializer(serializers.ModelSerializer):
-    lessons = LessonSerializer(many=True, read_only=True)
+class QuizAttemptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuizAttempt
+        fields = ['id', 'score', 'passed', 'attempted_at']
+
+
+# ─────────────────────────────────────────────
+# COURSE SERIALIZERS
+# ─────────────────────────────────────────────
+
+class CourseListSerializer(serializers.ModelSerializer):
+    """Lightweight — used in lists and enrollments."""
     lesson_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    category = CourseCategorySerializer(read_only=True)
 
     class Meta:
         model = Course
         fields = [
             'id', 'title', 'description', 'thumbnail', 'level',
-            'duration', 'tags', 'lesson_count', 'lessons',
-            'is_featured', 'created_at'
+            'duration', 'tags', 'lesson_count', 'category', 'is_featured'
         ]
 
     def get_lesson_count(self, obj):
@@ -56,13 +75,23 @@ class CourseSerializer(serializers.ModelSerializer):
         return obj.get_tags()
 
 
-class CourseListSerializer(serializers.ModelSerializer):
+class CourseSerializer(serializers.ModelSerializer):
+    """Full detail — used in course detail page."""
+    lessons = LessonSerializer(many=True, read_only=True)
     lesson_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    category = CourseCategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=CourseCategory.objects.all(), source='category', write_only=True, required=False
+    )
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'thumbnail', 'level', 'duration', 'tags', 'lesson_count', 'is_featured']
+        fields = [
+            'id', 'title', 'description', 'thumbnail', 'level', 'duration',
+            'tags', 'lesson_count', 'lessons', 'category', 'category_id',
+            'is_featured', 'is_active', 'created_at', 'updated_at'
+        ]
 
     def get_lesson_count(self, obj):
         return obj.lessons.count()
@@ -71,38 +100,46 @@ class CourseListSerializer(serializers.ModelSerializer):
         return obj.get_tags()
 
 
-class JobSerializer(serializers.ModelSerializer):
-    required_certificate_title = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Job
-        fields = [
-            'id', 'title', 'company', 'company_logo', 'location',
-            'description', 'requirements', 'job_type', 'salary_range',
-            'required_certificate', 'required_certificate_title',
-            'created_at', 'is_active'
-        ]
-
-    def get_required_certificate_title(self, obj):
-        if obj.required_certificate:
-            return obj.required_certificate.title
-        return None
-
+# ─────────────────────────────────────────────
+# USER SERIALIZERS
+# ─────────────────────────────────────────────
 
 class UserSerializer(serializers.ModelSerializer):
+    """Public user profile — used by customer, returned in lists."""
     skills = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'bio', 'avatar',
-            'skills', 'headline', 'location', 'github',
-            'linkedin', 'website', 'streak', 'first_name', 'last_name'
+            'id', 'username', 'email', 'first_name', 'last_name',
+            'bio', 'avatar', 'skills', 'headline', 'location',
+            'github', 'linkedin', 'website', 'streak', 'role'
         ]
 
     def get_skills(self, obj):
         return obj.get_skills_list()
 
+
+class UserAdminSerializer(serializers.ModelSerializer):
+    """Extended user data for admin — includes date_joined, is_active."""
+    skills = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name',
+            'bio', 'avatar', 'skills', 'headline', 'location',
+            'github', 'linkedin', 'website', 'streak', 'role',
+            'is_active', 'date_joined', 'last_login'
+        ]
+
+    def get_skills(self, obj):
+        return obj.get_skills_list()
+
+
+# ─────────────────────────────────────────────
+# ENROLLMENT & CERTIFICATE
+# ─────────────────────────────────────────────
 
 class EnrollmentSerializer(serializers.ModelSerializer):
     course = CourseListSerializer(read_only=True)
@@ -121,15 +158,43 @@ class CertificateSerializer(serializers.ModelSerializer):
         fields = ['id', 'course_id', 'course_title', 'issued_at', 'certificate_id']
 
 
+# ─────────────────────────────────────────────
+# JOB & APPLICATION
+# ─────────────────────────────────────────────
+
+class JobSerializer(serializers.ModelSerializer):
+    required_certificate_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Job
+        fields = [
+            'id', 'title', 'company', 'company_logo', 'location',
+            'description', 'requirements', 'job_type', 'salary_range',
+            'required_certificate', 'required_certificate_title',
+            'is_active', 'created_at', 'updated_at'
+        ]
+
+    def get_required_certificate_title(self, obj):
+        return obj.required_certificate.title if obj.required_certificate else None
+
+
 class ApplicationSerializer(serializers.ModelSerializer):
+    """Customer view — shows their own application + job info."""
     job = JobSerializer(read_only=True)
 
     class Meta:
         model = Application
-        fields = ['id', 'job', 'status', 'applied_at', 'cover_letter']
+        fields = ['id', 'job', 'status', 'cover_letter', 'applied_at', 'updated_at']
 
 
-class QuizAttemptSerializer(serializers.ModelSerializer):
+class ApplicationHRSerializer(serializers.ModelSerializer):
+    """HR view — includes applicant info + HR-only fields."""
+    job = JobSerializer(read_only=True)
+    applicant = UserSerializer(source='user', read_only=True)
+
     class Meta:
-        model = QuizAttempt
-        fields = ['id', 'score', 'passed', 'attempted_at']
+        model = Application
+        fields = [
+            'id', 'job', 'applicant', 'status', 'cover_letter',
+            'applied_at', 'updated_at', 'reviewed_by', 'hr_notes'
+        ]

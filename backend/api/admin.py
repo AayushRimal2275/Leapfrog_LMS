@@ -12,7 +12,9 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ('Profile', {'fields': ('bio', 'avatar', 'skills', 'headline', 'location', 'github', 'linkedin', 'website', 'streak')}),
     )
-    list_display = ['username', 'email', 'first_name', 'last_name', 'streak']
+list_display = ['username', 'email', 'role', 'is_active', 'streak']
+list_filter = ['role', 'is_active']
+search_fields = ['username', 'email']
 
 
 class LessonInline(admin.TabularInline):
