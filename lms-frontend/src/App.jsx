@@ -38,6 +38,7 @@ import HRJobs from "./pages/hr/HRJobs";
 import HRApplications from "./pages/hr/HRApplications";
 import HRTalentPool from "./pages/hr/HRTalentPool";
 import HRProfile from "./pages/hr/HRProfile";
+import LandingPage from "./pages/LandingPage";
 
 const toastStyle = {
   style: {
@@ -57,6 +58,7 @@ function App() {
         <Toaster position="top-right" toastOptions={toastStyle} />
         <Routes>
           {/* Public */}
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

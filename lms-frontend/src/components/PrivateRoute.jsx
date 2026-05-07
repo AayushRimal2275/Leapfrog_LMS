@@ -21,7 +21,7 @@ export default function PrivateRoute({ children, allowedRoles }) {
   }
 
   const token = localStorage.getItem("token");
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) return <Navigate to="/landing" replace />;
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Redirect to the correct home for their role
