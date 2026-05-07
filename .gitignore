@@ -1,0 +1,50 @@
+# ── Secrets — NEVER commit these ──
+.env
+.env.*
+*.env
+!.env.example
+
+# ── Python / Django ──
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+db.sqlite3
+*.sqlite3
+/backend/staticfiles/
+/backend/media/
+*.log
+
+# ── Virtual environments ──
+venv/
+env/
+.venv/
+.env/
+
+# ── Node / React (lms-frontend) ──
+node_modules/
+dist/
+build/
+.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── IDEs ──
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Compiled bytecode (already tracked by Python rule above) ──
+*.pyc
+*.pyo
