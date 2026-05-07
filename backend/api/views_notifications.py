@@ -28,8 +28,9 @@ User = get_user_model()
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_notifications(request):
-    notifs = Notification.objects.filter(user=request.user).order_by('-created_at')[:50]
+    notifs = Notification.objects.filter(user=request.user).order_by("-created_at")
     unread = notifs.filter(is_read=False).count()
+    notifs = notifs[:50]
     return Response({
         'notifications': [{
             'id': n.id, 'type': n.type, 'title': n.title,
