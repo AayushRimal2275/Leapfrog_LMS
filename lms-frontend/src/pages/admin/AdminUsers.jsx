@@ -6,7 +6,6 @@ import {
   UserX,
   UserCheck,
   ChevronDown,
-  Trash2,
 } from "lucide-react";
 import api from "../../services/api";
 import toast from "react-hot-toast";
@@ -37,7 +36,9 @@ export default function AdminUsers() {
       })
       .finally(() => setLoading(false));
   };
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   useEffect(() => {
     let list = users;
@@ -80,21 +81,6 @@ export default function AdminUsers() {
       load();
     } catch (e) {
       toast.error("Failed");
-    }
-  };
-
-  const handleDeleteUser = async (userId, username) => {
-    if (userId === me?.id) return toast.error("You cannot delete yourself");
-    if (
-      !confirm(`Permanently delete user "${username}"? This cannot be undone.`)
-    )
-      return;
-    try {
-      await api.delete(`/admin/users/${userId}/delete/`);
-      toast.success("User deleted");
-      load();
-    } catch (e) {
-      toast.error(e.response?.data?.error || "Failed to delete user");
     }
   };
 
@@ -234,28 +220,17 @@ export default function AdminUsers() {
                 </td>
                 <td className="px-5 py-3">
                   {u.id !== me?.id && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleToggleActive(u.id)}
-                        className={`p-1.5 rounded-lg transition ${u.is_active !== false ? "text-[#f38ba8] hover:bg-[#f38ba8]/20" : "text-[#a6e3a1] hover:bg-[#a6e3a1]/20"}`}
-                        title={
-                          u.is_active !== false ? "Deactivate" : "Activate"
-                        }
-                      >
-                        {u.is_active !== false ? (
-                          <UserX size={14} />
-                        ) : (
-                          <UserCheck size={14} />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(u.id, u.username)}
-                        className="p-1.5 rounded-lg transition text-[#585b70] hover:text-[#f38ba8] hover:bg-[#f38ba8]/10"
-                        title="Permanently delete user"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleToggleActive(u.id)}
+                      className={`p-1.5 rounded-lg transition ${u.is_active !== false ? "text-[#f38ba8] hover:bg-[#f38ba8]/20" : "text-[#a6e3a1] hover:bg-[#a6e3a1]/20"}`}
+                      title={u.is_active !== false ? "Deactivate" : "Activate"}
+                    >
+                      {u.is_active !== false ? (
+                        <UserX size={14} />
+                      ) : (
+                        <UserCheck size={14} />
+                      )}
+                    </button>
                   )}
                 </td>
               </tr>

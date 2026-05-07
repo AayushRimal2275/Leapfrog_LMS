@@ -8,6 +8,10 @@ import {
   TrendingUp,
   ArrowRight,
   Clock,
+  Calendar,
+  Zap,
+  Users,
+  MapPin,
 } from "lucide-react";
 import {
   BarChart,
@@ -21,42 +25,39 @@ import {
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
+const EVENT_COLORS = {
+  hackathon: { bg: "bg-[#f38ba8]/15", text: "text-[#f38ba8]", dot: "#f38ba8" },
+  workshop: { bg: "bg-[#fab387]/15", text: "text-[#fab387]", dot: "#fab387" },
+  webinar: { bg: "bg-[#89b4fa]/15", text: "text-[#89b4fa]", dot: "#89b4fa" },
+  bootcamp: { bg: "bg-[#cba6f7]/15", text: "text-[#cba6f7]", dot: "#cba6f7" },
+};
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
-  const [courses, setCourses] = useState([]);
-  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      api.get("/dashboard-stats/"),
-      api.get("/courses/"),
-      api.get("/jobs/"),
-    ])
-      .then(([statsRes, coursesRes, jobsRes]) => {
-        setStats(statsRes.data);
-        setCourses(coursesRes.data.slice(0, 4));
-        setJobs(jobsRes.data.slice(0, 3));
-      })
+    api
+      .get("/dashboard/")
+      .then((r) => setStats(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
+  if (loading)
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 rounded-full border-4 border-[#cba6f7] border-t-transparent animate-spin" />
       </div>
     );
-  }
 
   const firstName =
     user?.first_name || user?.username?.split("@")[0] || "Learner";
 
   const statCards = [
     {
-      label: "Courses Enrolled",
+      label: "Enrolled",
       value: stats?.courses_enrolled ?? 0,
       icon: BookOpen,
       color: "#cba6f7",
@@ -81,14 +82,14 @@ export default function Dashboard() {
     },
   ];
 
-  const progressData = stats?.course_progress?.length
-    ? stats.course_progress
-    : courses.map((c) => ({ course: c.title.split(" ")[0], progress: 0 }));
+  const progressData =
+    stats?.course_progress?.filter((p) => p.progress > 0) || [];
+  const allProgress = stats?.course_progress || [];
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between animate-fade-in-up">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#cdd6f4]">
             Good{" "}
@@ -99,14 +100,13 @@ export default function Dashboard() {
                 : "evening"}
             , <span className="text-[#cba6f7]">{firstName}</span> 👋
           </h1>
-          {/* was #b5b6bb — lifted to #bac2de for clear readability */}
           <p className="text-[#bac2de] text-sm mt-1">
             Here's your learning overview
           </p>
         </div>
         <Link
           to="/courses"
-          className="flex items-center gap-2 bg-[#cba6f7] text-[#11111b] px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition hover:scale-105"
+          className="flex items-center gap-2 bg-[#cba6f7] text-[#11111b] px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition"
         >
           Explore Courses <ArrowRight size={14} />
         </Link>
@@ -120,7 +120,6 @@ export default function Dashboard() {
             className={`bg-[#1e1e2e] border border-[#313244] rounded-2xl p-4 hover:border-[#585b70] transition animate-fade-in-up stagger-${i + 1}`}
           >
             <div className="flex items-center justify-between mb-3">
-              {/* was #f0f0f5 (too white/bright) → #bac2de: warm lavender-gray, great contrast on dark */}
               <p className="text-[#bac2de] text-xs font-medium">{label}</p>
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -134,9 +133,8 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Chart + Streak */}
-      <div className="grid lg:grid-cols-3 gap-4 animate-fade-in-up stagger-3">
-        {/* Progress Chart */}
+      {/* Progress chart + Streak */}
+      <div className="grid lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-[#1e1e2e] border border-[#313244] rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp size={16} className="text-[#cba6f7]" />
@@ -144,181 +142,266 @@ export default function Dashboard() {
               Learning Progress
             </h2>
           </div>
-          {progressData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={progressData} barCategoryGap="30%">
-                <XAxis
-                  dataKey="course"
-                  tick={{ fill: "#9399b2", fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fill: "#9399b2", fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                  domain={[0, 100]}
-                  tickFormatter={(v) => `${v}%`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: "#313244",
-                    border: "none",
-                    borderRadius: "8px",
-                    color: "#cdd6f4",
-                    fontSize: "12px",
-                  }}
-                  formatter={(v) => [`${v}%`, "Progress"]}
-                />
-                <Bar dataKey="progress" radius={[6, 6, 0, 0]}>
-                  {progressData.map((_, i) => (
-                    <Cell key={i} fill={i % 2 === 0 ? "#cba6f7" : "#89b4fa"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          {allProgress.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={allProgress} barCategoryGap="30%">
+                  <XAxis
+                    dataKey="course"
+                    tick={{ fill: "#9399b2", fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fill: "#9399b2", fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                    domain={[0, 100]}
+                    tickFormatter={(v) => `${v}%`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "#313244",
+                      border: "none",
+                      borderRadius: "8px",
+                      color: "#cdd6f4",
+                      fontSize: "12px",
+                    }}
+                    formatter={(v) => [`${v}%`, "Progress"]}
+                  />
+                  <Bar dataKey="progress" radius={[6, 6, 0, 0]}>
+                    {allProgress.map((_, i) => (
+                      <Cell
+                        key={i}
+                        fill={i % 2 === 0 ? "#cba6f7" : "#89b4fa"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              {/* Progress list below chart */}
+              <div className="mt-3 space-y-2">
+                {allProgress.map((p) => (
+                  <div key={p.course_id} className="flex items-center gap-3">
+                    <p className="text-[#9399b2] text-xs w-32 truncate flex-shrink-0">
+                      {p.course}
+                    </p>
+                    <div className="flex-1 h-1.5 bg-[#313244] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${p.progress}%`,
+                          background: p.completed ? "#a6e3a1" : "#cba6f7",
+                        }}
+                      />
+                    </div>
+                    <span className="text-[#9399b2] text-[10px] w-8 text-right">
+                      {p.progress}%
+                    </span>
+                    {p.completed && (
+                      <span className="text-[#a6e3a1] text-[10px]">✓</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
-            <div className="h-[180px] flex flex-col items-center justify-center text-[#585b70]">
-              <BookOpen size={32} className="mb-2 opacity-40" />
-              {/* was #45475a (nearly invisible) → #585b70 readable placeholder */}
-              <p className="text-sm text-[#9399b2]">
-                Enroll in courses to track progress
-              </p>
+            <div className="h-40 flex flex-col items-center justify-center">
+              <BookOpen size={28} className="text-[#313244] mb-2" />
+              <p className="text-[#585b70] text-sm">No courses enrolled yet</p>
+              <Link
+                to="/courses"
+                className="text-[#cba6f7] text-xs mt-2 hover:underline"
+              >
+                Browse courses →
+              </Link>
             </div>
           )}
         </div>
 
         {/* Streak card */}
-        <div className="bg-[#1e1e2e] border border-[#313244] rounded-2xl p-5 flex flex-col">
-          <div className="flex items-center gap-2 mb-4">
-            <Flame size={16} className="text-[#fab387]" />
-            <h2 className="text-[#cdd6f4] font-semibold text-sm">
-              Daily Streak
-            </h2>
+        <div className="bg-[#1e1e2e] border border-[#313244] rounded-2xl p-5 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-full bg-[#fab387]/20 flex items-center justify-center mb-3">
+            <Flame size={30} className="text-[#fab387]" />
           </div>
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#fab387] to-[#f38ba8] flex items-center justify-center mb-3 animate-pulse-soft">
-              <span className="text-3xl font-black text-white">
-                {stats?.streak ?? 0}
-              </span>
-            </div>
-            <p className="text-[#cdd6f4] font-semibold">
-              {stats?.streak > 0 ? "Days in a row 🔥" : "Start your streak!"}
-            </p>
-            {/* was #6c7086 → #9399b2 — readable motivational text */}
-            <p className="text-[#9399b2] text-xs mt-1 text-center">
-              Log in daily to keep your streak alive
-            </p>
-          </div>
+          <p className="text-4xl font-bold text-[#cdd6f4]">
+            {stats?.streak ?? 0}
+          </p>
+          <p className="text-[#9399b2] text-sm mt-1">Day Streak 🔥</p>
+          <p className="text-[#585b70] text-xs mt-3">
+            Keep learning daily to maintain your streak!
+          </p>
         </div>
       </div>
 
       {/* Trending Courses */}
-      <div className="animate-fade-in-up stagger-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[#cdd6f4] font-semibold">Trending Courses</h2>
-          <Link
-            to="/courses"
-            className="text-[#cba6f7] text-sm hover:underline flex items-center gap-1 transition hover:gap-2"
-          >
-            View all <ArrowRight size={13} />
-          </Link>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {courses.map((course, i) => (
+      {stats?.trending_courses?.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[#cdd6f4] font-semibold flex items-center gap-2">
+              <Zap size={15} className="text-[#f9e2af]" />
+              Trending Courses
+            </h2>
             <Link
-              key={course.id}
-              to={`/courses/${course.id}/learn`}
-              className={`bg-[#1e1e2e] border border-[#313244] rounded-2xl overflow-hidden hover:border-[#cba6f7] transition group animate-fade-in-up stagger-${i + 1}`}
+              to="/courses"
+              className="text-[#9399b2] text-xs hover:text-[#cdd6f4] transition flex items-center gap-1"
             >
-              <div className="aspect-video bg-[#313244] flex items-center justify-center overflow-hidden">
-                {course.thumbnail ? (
+              View all <ArrowRight size={11} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {stats.trending_courses.map((c) => (
+              <Link
+                key={c.id}
+                to={`/courses/${c.id}`}
+                className="bg-[#1e1e2e] border border-[#313244] rounded-2xl overflow-hidden hover:border-[#585b70] transition group"
+              >
+                {c.thumbnail ? (
                   <img
-                    src={course.thumbnail}
-                    alt={course.title}
-                    className="w-full h-full object-contain p-4 group-hover:scale-105 transition duration-300"
+                    src={c.thumbnail}
+                    alt={c.title}
+                    className="w-full h-24 object-cover group-hover:opacity-90 transition"
                   />
                 ) : (
-                  <BookOpen size={28} className="text-[#585b70]" />
+                  <div className="w-full h-24 bg-gradient-to-br from-[#cba6f7]/20 to-[#89b4fa]/20 flex items-center justify-center">
+                    <BookOpen size={24} className="text-[#585b70]" />
+                  </div>
                 )}
-              </div>
-              <div className="p-3">
-                <p className="text-[#cdd6f4] text-sm font-medium line-clamp-1 group-hover:text-[#cba6f7] transition">
-                  {course.title}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                      course.level === "beginner"
-                        ? "bg-[#a6e3a1]/20 text-[#a6e3a1]"
-                        : course.level === "intermediate"
-                          ? "bg-[#fab387]/20 text-[#fab387]"
-                          : "bg-[#f38ba8]/20 text-[#f38ba8]"
-                    }`}
-                  >
-                    {course.level}
-                  </span>
-                  {course.duration && (
-                    /* was #6c7086 → #9399b2 — visible metadata */
-                    <span className="text-[#9399b2] text-[10px] flex items-center gap-0.5">
-                      <Clock size={10} /> {course.duration}
+                <div className="p-3">
+                  <p className="text-[#cdd6f4] text-xs font-semibold line-clamp-2 leading-snug">
+                    {c.title}
+                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-[10px] bg-[#313244] text-[#9399b2] px-1.5 py-0.5 rounded-md capitalize">
+                      {c.level}
                     </span>
-                  )}
+                    <span className="text-[10px] text-[#585b70] flex items-center gap-0.5">
+                      <Users size={9} />
+                      {c.enroll_count}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Latest Jobs */}
-      <div className="animate-fade-in-up stagger-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[#cdd6f4] font-semibold">Latest Job Openings</h2>
-          <Link
-            to="/jobs"
-            className="text-[#cba6f7] text-sm hover:underline flex items-center gap-1 transition hover:gap-2"
-          >
-            View all <ArrowRight size={13} />
-          </Link>
-        </div>
-        <div className="space-y-3">
-          {jobs.map((job, i) => (
-            <Link
-              key={job.id}
-              to={`/jobs/${job.id}`}
-              className={`flex items-center gap-4 bg-[#1e1e2e] border border-[#313244] rounded-2xl p-4 hover:border-[#89b4fa] transition group animate-fade-in-up stagger-${i + 1}`}
-            >
-              <img
-                src={
-                  job.company_logo ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=313244&color=cdd6f4`
-                }
-                className="w-10 h-10 rounded-xl object-cover flex-shrink-0"
-                alt={job.company}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-[#cdd6f4] font-medium text-sm group-hover:text-[#89b4fa] transition">
-                  {job.title}
-                </p>
-                {/* was #6c7086 → #9399b2 — company + location clearly readable */}
-                <p className="text-[#9399b2] text-xs">
-                  {job.company} · {job.location}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className="text-[10px] bg-[#89b4fa]/20 text-[#89b4fa] px-2 py-0.5 rounded-full">
-                  {job.job_type}
-                </span>
-                {job.salary_range && (
-                  <span className="text-[10px] text-[#a6e3a1]">
-                    {job.salary_range}
+      {/* Latest Jobs + Upcoming Events */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Latest Jobs */}
+        {stats?.latest_jobs?.length > 0 && (
+          <div className="bg-[#1e1e2e] border border-[#313244] rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-[#cdd6f4] font-semibold flex items-center gap-2">
+                <Briefcase size={15} className="text-[#89b4fa]" />
+                Latest Jobs
+              </h2>
+              <Link
+                to="/jobs"
+                className="text-[#9399b2] text-xs hover:text-[#cdd6f4] flex items-center gap-1"
+              >
+                View all <ArrowRight size={11} />
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {stats.latest_jobs.map((j) => (
+                <Link
+                  key={j.id}
+                  to={`/jobs/${j.id}`}
+                  className="flex items-center gap-3 py-2 border-b border-[#313244]/50 last:border-0 hover:opacity-80 transition"
+                >
+                  {j.company_logo ? (
+                    <img
+                      src={j.company_logo}
+                      className="w-9 h-9 rounded-xl object-cover flex-shrink-0"
+                      alt=""
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-xl bg-[#313244] flex items-center justify-center flex-shrink-0">
+                      <Briefcase size={14} className="text-[#585b70]" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[#cdd6f4] text-sm font-medium truncate">
+                      {j.title}
+                    </p>
+                    <p className="text-[#9399b2] text-xs flex items-center gap-1">
+                      <MapPin size={9} />
+                      {j.company} · {j.location}
+                    </p>
+                  </div>
+                  <span className="text-[10px] bg-[#89b4fa]/15 text-[#89b4fa] px-2 py-0.5 rounded-full capitalize flex-shrink-0">
+                    {j.job_type}
                   </span>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming Events */}
+        {stats?.upcoming_events?.length > 0 && (
+          <div className="bg-[#1e1e2e] border border-[#313244] rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-[#cdd6f4] font-semibold flex items-center gap-2">
+                <Calendar size={15} className="text-[#f38ba8]" />
+                Upcoming Events
+              </h2>
+              <Link
+                to="/events"
+                className="text-[#9399b2] text-xs hover:text-[#cdd6f4] flex items-center gap-1"
+              >
+                View all <ArrowRight size={11} />
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {stats.upcoming_events.map((e) => {
+                const ec = EVENT_COLORS[e.event_type] || EVENT_COLORS.webinar;
+                return (
+                  <Link
+                    key={e.id}
+                    to="/events"
+                    className="flex items-center gap-3 py-2 border-b border-[#313244]/50 last:border-0 hover:opacity-80 transition"
+                  >
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${ec.bg}`}
+                    >
+                      <Calendar size={14} style={{ color: ec.dot }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[#cdd6f4] text-sm font-medium truncate">
+                        {e.title}
+                      </p>
+                      <p className="text-[#9399b2] text-xs">
+                        {new Date(e.start_date).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })}{" "}
+                        · {e.location}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full capitalize ${ec.bg} ${ec.text}`}
+                      >
+                        {e.event_type}
+                      </span>
+                      {e.registered && (
+                        <span className="text-[10px] text-[#a6e3a1]">
+                          ✓ Registered
+                        </span>
+                      )}
+                      {e.is_free && !e.registered && (
+                        <span className="text-[10px] text-[#9399b2]">Free</span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

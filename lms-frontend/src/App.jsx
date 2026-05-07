@@ -7,10 +7,13 @@ import PrivateRoute from "./components/PrivateRoute";
 // ── Auth ──
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 // ── Customer ──
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
+import CourseDetail from "./pages/CourseDetail";
 import CourseLearn from "./pages/CourseLearn";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
@@ -19,12 +22,15 @@ import MyCourses from "./pages/MyCourses";
 import MyApplications from "./pages/MyApplications";
 import Certificates from "./pages/Certificates";
 import QuizPage from "./pages/QuizPage";
+import Events from "./pages/Events";
 
 // ── Admin ──
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCategories from "./pages/admin/AdminCategories";
+import AdminEvents from "./pages/admin/AdminEvents";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 // ── HR ──
 import HRDashboard from "./pages/hr/HRDashboard";
@@ -53,6 +59,11 @@ function App() {
           {/* Public */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route
+            path="/reset-password/:uid/:token"
+            element={<ResetPassword />}
+          />
 
           {/* ── Customer routes ── */}
           <Route
@@ -63,13 +74,21 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/courses" element={<Courses />} />
-                    <Route path="/courses/:id/learn" element={<CourseLearn />} />
+                    <Route path="/courses/:id" element={<CourseDetail />} />
+                    <Route
+                      path="/courses/:id/learn"
+                      element={<CourseLearn />}
+                    />
                     <Route path="/courses/:id/quiz" element={<QuizPage />} />
                     <Route path="/jobs" element={<Jobs />} />
                     <Route path="/jobs/:id" element={<JobDetail />} />
+                    <Route path="/events" element={<Events />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/my-courses" element={<MyCourses />} />
-                    <Route path="/my-applications" element={<MyApplications />} />
+                    <Route
+                      path="/my-applications"
+                      element={<MyApplications />}
+                    />
                     <Route path="/certificates" element={<Certificates />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
@@ -89,7 +108,8 @@ function App() {
                     <Route path="/courses" element={<AdminCourses />} />
                     <Route path="/users" element={<AdminUsers />} />
                     <Route path="/categories" element={<AdminCategories />} />
-                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/events" element={<AdminEvents />} />
+                    <Route path="/profile" element={<AdminProfile />} />
                     <Route path="*" element={<Navigate to="/admin" />} />
                   </Routes>
                 </MainLayout>

@@ -9,11 +9,11 @@ import {
   LogOut,
   Layers,
   Users,
-  PlusSquare,
   Settings,
-  BarChart2,
   UserCheck,
   ClipboardList,
+  Calendar,
+  Bell,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -23,6 +23,7 @@ const customerNav = [
   { to: "/my-courses", icon: Layers, label: "My Learning" },
   { to: "/jobs", icon: Briefcase, label: "Jobs" },
   { to: "/my-applications", icon: FileCheck, label: "Applications" },
+  { to: "/events", icon: Calendar, label: "Events" },
   { to: "/certificates", icon: GraduationCap, label: "Certificates" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
@@ -32,6 +33,7 @@ const adminNav = [
   { to: "/admin/courses", icon: BookOpen, label: "Courses" },
   { to: "/admin/users", icon: Users, label: "Users" },
   { to: "/admin/categories", icon: Settings, label: "Categories" },
+  { to: "/admin/events", icon: Calendar, label: "Events" },
   { to: "/admin/profile", icon: User, label: "Profile" },
 ];
 

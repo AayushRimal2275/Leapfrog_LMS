@@ -16,7 +16,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .models import (
     Course, Job, Application, Enrollment, Lesson,
-    LessonProgress, Quiz, QuizAttempt, Certificate
+    LessonProgress, Quiz, QuizAttempt, Certificate,
+    Notification, Event, EventRegistration, ExtraCertificate, UserProject,
 )
 from .serializers import (
     CourseSerializer, CourseListSerializer, JobSerializer, UserSerializer,
@@ -176,16 +177,75 @@ def get_dashboard_stats(request):
         user.last_active = today
         user.save(update_fields=['streak', 'last_active'])
 
+    # Progress — recalculate live from LessonProgress so it's always accurate
+    course_progress = []
+    for en in enrollments:
+        total = en.course.lessons.count()
+        if total > 0:
+            done = LessonProgress.objects.filter(
+                user=user, lesson__course=en.course, completed=True
+            ).count()
+            live_progress = int((done / total) * 100)
+            # Sync enrollment.progress if out of date
+            if en.progress != live_progress:
+                en.progress = live_progress
+                en.save(update_fields=['progress'])
+        else:
+            live_progress = en.progress  # no lessons yet, use stored value
+
+        course_progress.append({
+            'course': en.course.title[:20],  # trim for chart readability
+            'course_id': en.course.id,
+            'progress': live_progress,
+            'completed': en.completed,
+        })
+
+    # Trending courses (most enrolled, limit 4)
+    from django.db.models import Count
+    trending = Course.objects.filter(is_active=True).annotate(
+        enroll_count=Count('enrollment')
+    ).order_by('-enroll_count', '-created_at')[:4]
+
+    # Latest jobs (limit 3)
+    latest_jobs = Job.objects.filter(is_active=True).order_by('-created_at')[:3]
+
+    # Upcoming events
+    from django.utils import timezone as tz
+    upcoming_events = Event.objects.filter(
+        status__in=['upcoming', 'ongoing'],
+        end_date__gte=tz.now()
+    ).order_by('start_date')[:3]
+
+    # My event registrations (for badge)
+    my_event_ids = EventRegistration.objects.filter(
+        user=user, status__in=['registered', 'waitlisted']
+    ).values_list('event_id', flat=True)
+
     return Response({
-        "courses_enrolled": enrollments.count(),
-        "completed_courses": enrollments.filter(completed=True).count(),
-        "jobs_applied": applications.count(),
-        "certificates": certificates.count(),
-        "streak": user.streak,
-        "course_progress": [
-            {"course": en.course.title, "progress": en.progress}
-            for en in enrollments
-        ],
+        "courses_enrolled":   enrollments.count(),
+        "completed_courses":  enrollments.filter(completed=True).count(),
+        "jobs_applied":       applications.count(),
+        "certificates":       certificates.count(),
+        "streak":             user.streak,
+        "course_progress":    course_progress,
+        "trending_courses": [{
+            'id': c.id, 'title': c.title, 'level': c.level,
+            'thumbnail': c.thumbnail, 'duration': c.duration,
+            'enroll_count': c.enroll_count,
+            'category': c.category.name if c.category else None,
+        } for c in trending],
+        "latest_jobs": [{
+            'id': j.id, 'title': j.title, 'company': j.company,
+            'location': j.location, 'job_type': j.job_type,
+            'salary_range': j.salary_range, 'company_logo': j.company_logo,
+        } for j in latest_jobs],
+        "upcoming_events": [{
+            'id': e.id, 'title': e.title, 'event_type': e.event_type,
+            'start_date': e.start_date, 'location': e.location,
+            'is_free': e.is_free, 'thumbnail': e.thumbnail,
+            'registered': e.id in my_event_ids,
+            'is_full': e.is_full,
+        } for e in upcoming_events],
     })
 
 
@@ -205,6 +265,17 @@ def enroll_course(request):
     enrollment, created = Enrollment.objects.get_or_create(user=request.user, course=course)
     if not created:
         return Response({"error": "Already enrolled"}, status=400)
+
+    # Notify all admins
+    admins = User.objects.filter(role='admin', is_active=True)
+    admin_notifs = [Notification(
+        user=a, type='status',
+        title=f"New enrollment: {course.title}",
+        message=f"{request.user.get_full_name() or request.user.username} enrolled in '{course.title}'.",
+        link='/admin/courses'
+    ) for a in admins]
+    if admin_notifs:
+        Notification.objects.bulk_create(admin_notifs)
 
     return Response({"message": "Enrolled successfully", "enrollment_id": enrollment.id}, status=201)
 
@@ -252,6 +323,18 @@ def complete_lesson(request):
     if progress == 100 and not enrollment.completed:
         enrollment.completed = True
         enrollment.completed_at = timezone.now()
+        # Auto-issue certificate
+        cert, created = Certificate.objects.get_or_create(
+            user=request.user, course=lesson.course,
+            defaults={'certificate_id': f"CERT-{uuid.uuid4().hex[:10].upper()}"}
+        )
+        if created:
+            Notification.objects.create(
+                user=request.user, type='certificate',
+                title=f"Certificate Earned! 🎓",
+                message=f"You completed '{lesson.course.title}' and earned your certificate.",
+                link='/certificates'
+            )
 
     enrollment.save()
     return Response({"message": "Lesson marked complete", "progress": progress, "course_completed": enrollment.completed})
@@ -376,6 +459,16 @@ def apply_job(request):
     )
     if not created:
         return Response({"error": "Already applied"}, status=400)
+
+    # Notify the HR who posted the job
+    if job.created_by:
+        Notification.objects.create(
+            user=job.created_by,
+            type='status',
+            title=f"New application: {job.title}",
+            message=f"{request.user.get_full_name() or request.user.username} applied for '{job.title}' at {job.company}.",
+            link='/hr/applications'
+        )
 
     return Response({"message": "Applied successfully", "application_id": app.id}, status=201)
 

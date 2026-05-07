@@ -49,7 +49,9 @@ export default function AdminCourses() {
       })
       .finally(() => setLoading(false));
   };
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const openCreate = () => {
     setEditing(null);
@@ -297,29 +299,9 @@ export default function AdminCourses() {
               <Input
                 value={form.thumbnail}
                 onChange={(v) => setForm({ ...form, thumbnail: v })}
-                placeholder="https://i.ytimg.com/vi/VIDEO_ID/hqdefault.jpg"
+                placeholder="https://..."
               />
             </Field>
-            <div className="bg-[#313244]/60 border border-[#45475a] rounded-xl p-3 text-xs text-[#9399b2] leading-relaxed">
-              <p className="text-[#fab387] font-semibold mb-1">
-                📌 How to get YouTube thumbnail URL:
-              </p>
-              <p>1. Open the YouTube video → copy its URL</p>
-              <p>
-                2. Find the video ID (after{" "}
-                <span className="font-mono text-[#cdd6f4]">?v=</span>)
-              </p>
-              <p>
-                3. Thumbnail:{" "}
-                <span className="font-mono text-[#a6e3a1]">
-                  https://i.ytimg.com/vi/VIDEO_ID/hqdefault.jpg
-                </span>
-              </p>
-              <p className="mt-1 text-[#585b70]">
-                Example for Django course: use
-                djangoproject.com/s/img/logos/django-logo-negative.png
-              </p>
-            </div>
             <Field label="Tags (comma separated)">
               <Input
                 value={form.tags}

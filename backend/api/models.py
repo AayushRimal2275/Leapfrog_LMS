@@ -237,3 +237,146 @@ class Application(models.Model):
 
     def __str__(self):
         return f"{self.user.username} → {self.job.title} [{self.status}]"
+
+# ─────────────────────────────────────────────
+# EVENTS (Hackathons, Workshops)
+# ─────────────────────────────────────────────
+
+class Event(models.Model):
+    TYPE_CHOICES = [
+        ('hackathon', 'Hackathon'),
+        ('workshop', 'Workshop'),
+        ('webinar', 'Webinar'),
+        ('bootcamp', 'Bootcamp'),
+    ]
+    STATUS_CHOICES = [
+        ('upcoming', 'Upcoming'),
+        ('ongoing', 'Ongoing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    event_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='workshop')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='upcoming')
+    thumbnail = models.URLField(blank=True, default="")
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    location = models.CharField(max_length=255, blank=True, default="Online")
+    max_participants = models.IntegerField(default=100)
+    registration_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    is_free = models.BooleanField(default=True)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_events')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.event_type})"
+
+    @property
+    def registered_count(self):
+        return self.registrations.filter(status__in=['registered', 'waitlisted']).count()
+
+    @property
+    def is_full(self):
+        return self.registered_count >= self.max_participants
+
+
+class EventRegistration(models.Model):
+    STATUS_CHOICES = [
+        ('registered', 'Registered'),
+        ('waitlisted', 'Waitlisted'),
+        ('cancelled', 'Cancelled'),
+        ('attended', 'Attended'),
+    ]
+    PAYMENT_STATUS = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('refunded', 'Refunded'),
+        ('waived', 'Waived'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='event_registrations')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='registrations')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='registered')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='waived')
+    registered_at = models.DateTimeField(auto_now_add=True)
+    payment_proof = models.URLField(blank=True, default="")
+    notes = models.TextField(blank=True, default="")
+
+    class Meta:
+        unique_together = ('user', 'event')
+
+    def __str__(self):
+        return f"{self.user.username} → {self.event.title} [{self.status}]"
+
+
+# ─────────────────────────────────────────────
+# NOTIFICATIONS
+# ─────────────────────────────────────────────
+
+class Notification(models.Model):
+    TYPE_CHOICES = [
+        ('hired', 'Hired'),
+        ('interview', 'Interview Invite'),
+        ('rejected', 'Rejected'),
+        ('status', 'Status Update'),
+        ('new_course', 'New Course'),
+        ('new_job', 'New Job'),
+        ('new_event', 'New Event'),
+        ('certificate', 'Certificate Earned'),
+        ('feedback', 'Feedback'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='status')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    link = models.CharField(max_length=255, blank=True, default="")
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.type}] {self.title} → {self.user.username}"
+
+
+# ─────────────────────────────────────────────
+# EXTRA CERTIFICATES (uploaded by customer)
+# ─────────────────────────────────────────────
+
+class ExtraCertificate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='extra_certificates')
+    title = models.CharField(max_length=255)
+    issuer = models.CharField(max_length=255, blank=True, default="")
+    file_url = models.URLField(blank=True, default="")  # uploaded image/pdf url
+    issued_date = models.DateField(null=True, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+
+
+# ─────────────────────────────────────────────
+# USER PROJECTS
+# ─────────────────────────────────────────────
+
+class UserProject(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
+    tech_stack = models.TextField(blank=True, default="[]")  # JSON list
+    github_url = models.URLField(blank=True, default="")
+    live_url = models.URLField(blank=True, default="")
+    thumbnail = models.URLField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_tech_stack(self):
+        try:
+            import json
+            return json.loads(self.tech_stack)
+        except Exception:
+            return []
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"

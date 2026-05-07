@@ -102,15 +102,12 @@ def update_user_role(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def delete_user(request, user_id):
-    """Permanently delete a user account and all associated data."""
     try:
         user = User.objects.get(id=user_id)
     except User.DoesNotExist:
         return Response({"error": "User not found"}, status=404)
-
     if user == request.user:
         return Response({"error": "You cannot delete your own account"}, status=400)
-
     username = user.username
     user.delete()
     return Response({"message": f"User '{username}' permanently deleted"})
@@ -143,7 +140,17 @@ def toggle_user_active(request, user_id):
 def create_course(request):
     serializer = CourseSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(created_by=request.user)
+        course = serializer.save(created_by=request.user)
+        # Notify all customers
+        from .models import Notification
+        customers = User.objects.filter(role='customer', is_active=True)
+        notifs = [Notification(
+            user=c, type='new_course',
+            title=f"New Course: {course.title}",
+            message=f"A new {course.level} course '{course.title}' is now available. Start learning today!",
+            link='/courses'
+        ) for c in customers]
+        Notification.objects.bulk_create(notifs)
         return Response(serializer.data, status=201)
     return Response(serializer.errors, status=400)
 

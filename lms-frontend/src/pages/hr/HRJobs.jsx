@@ -45,7 +45,9 @@ export default function HRJobs() {
       })
       .finally(() => setLoading(false));
   };
-  useEffect(load, [myOnly]);
+  useEffect(() => {
+    load();
+  }, [myOnly]);
 
   const openCreate = () => {
     setEditing(null);

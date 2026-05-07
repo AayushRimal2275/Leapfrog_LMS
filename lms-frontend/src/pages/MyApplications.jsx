@@ -97,11 +97,17 @@ function AppCard({ app }) {
         <Icon size={11} />
         {stage.label}
       </div>
-      {app.updated_at && app.status !== "applied" && (
-        <p className="text-[#585b70] text-[10px] mt-1.5 flex items-center gap-1">
-          <Clock size={9} /> Status updated{" "}
-          {new Date(app.updated_at).toLocaleDateString()}
-        </p>
+
+      {/* HR Feedback */}
+      {app.hr_notes && (
+        <div className="mt-3 bg-[#89b4fa]/10 border border-[#89b4fa]/20 rounded-xl px-3 py-2.5">
+          <p className="text-[#89b4fa] text-[10px] font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <MessageSquare size={10} /> HR Feedback
+          </p>
+          <p className="text-[#a6adc8] text-xs leading-relaxed">
+            {app.hr_notes}
+          </p>
+        </div>
       )}
     </div>
   );

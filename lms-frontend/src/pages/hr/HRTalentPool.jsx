@@ -9,6 +9,9 @@ import {
   GitBranch,
   Link,
   Globe,
+  MapPin,
+  Calendar,
+  Code,
 } from "lucide-react";
 import api from "../../services/api";
 
@@ -30,24 +33,33 @@ export default function HRTalentPool() {
         setTalent(t.data);
         setCourses(c.data);
       })
+      .catch(() => {})
       .finally(() => setLoading(false));
   };
-  useEffect(load, [courseFilter]);
+  useEffect(() => {
+    load();
+  }, [courseFilter]);
 
+  // Backend returns flat: { id, first_name, last_name, avatar, headline, skills, certificates_count, ... }
   const filtered = search
     ? talent.filter(
         (t) =>
-          t.user?.first_name?.toLowerCase().includes(search.toLowerCase()) ||
-          t.user?.username?.toLowerCase().includes(search.toLowerCase()) ||
-          t.user?.headline?.toLowerCase().includes(search.toLowerCase()),
+          `${t.first_name} ${t.last_name}`
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+          t.username?.toLowerCase().includes(search.toLowerCase()) ||
+          t.headline?.toLowerCase().includes(search.toLowerCase()) ||
+          t.skills?.some((s) => s.toLowerCase().includes(search.toLowerCase())),
       )
     : talent;
 
   const openProfile = (userId) => {
     setProfileLoading(true);
+    setProfile(null);
     api
       .get(`/hr/talent-pool/${userId}/`)
       .then((r) => setProfile(r.data))
+      .catch(() => setProfile(null))
       .finally(() => setProfileLoading(false));
   };
 
@@ -55,7 +67,7 @@ export default function HRTalentPool() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="animate-fade-in-up">
+      <div>
         <h1 className="text-2xl font-bold text-[#cdd6f4]">Talent Pool</h1>
         <p className="text-[#9399b2] text-sm mt-1">
           {filtered.length} certified candidates
@@ -63,7 +75,7 @@ export default function HRTalentPool() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 animate-fade-in-up stagger-1">
+      <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-48">
           <Search
             size={14}
@@ -72,7 +84,7 @@ export default function HRTalentPool() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or headline..."
+            placeholder="Search by name, headline or skill..."
             className="w-full bg-[#1e1e2e] border border-[#313244] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#cdd6f4] placeholder-[#45475a] focus:outline-none focus:border-[#89dceb] transition"
           />
         </div>
@@ -91,84 +103,108 @@ export default function HRTalentPool() {
       </div>
 
       {/* Candidates grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in-up stagger-2">
-        {filtered.map((item, i) => (
-          <div
-            key={item.user?.id}
-            className={`bg-[#1e1e2e] border border-[#313244] rounded-2xl p-4 hover:border-[#89dceb] transition cursor-pointer animate-fade-in-up stagger-${Math.min(i + 1, 5)}`}
-            onClick={() => openProfile(item.user?.id)}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <img
-                src={
-                  item.user?.avatar ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(item.user?.first_name || item.user?.username || "U")}&background=313244&color=cdd6f4`
-                }
-                className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                alt=""
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-[#cdd6f4] font-semibold text-sm">
-                  {item.user?.first_name} {item.user?.last_name}
-                </p>
-                <p className="text-[#9399b2] text-xs truncate">
-                  {item.user?.headline || item.user?.email}
-                </p>
-              </div>
-            </div>
-
-            {/* Certs */}
-            <div className="space-y-1.5 mb-3">
-              {item.certificates?.slice(0, 2).map((cert) => (
-                <div
-                  key={cert.id}
-                  className="flex items-center gap-2 bg-[#313244]/50 rounded-lg px-2.5 py-1.5"
-                >
-                  <GraduationCap
-                    size={12}
-                    className="text-[#a6e3a1] flex-shrink-0"
-                  />
-                  <span className="text-[#a6e3a1] text-xs truncate">
-                    {cert.course_title}
-                  </span>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((item) => {
+          const fullName =
+            `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+            item.username ||
+            "User";
+          const avatarUrl =
+            item.avatar ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=313244&color=cdd6f4`;
+          return (
+            <div
+              key={item.id}
+              className="bg-[#1e1e2e] border border-[#313244] rounded-2xl p-4 hover:border-[#89dceb] transition cursor-pointer"
+              onClick={() => openProfile(item.id)}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src={avatarUrl}
+                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                  alt=""
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#cdd6f4] font-semibold text-sm">
+                    {fullName}
+                  </p>
+                  <p className="text-[#9399b2] text-xs truncate">
+                    {item.headline || item.email}
+                  </p>
+                  {item.location && (
+                    <p className="text-[#585b70] text-xs flex items-center gap-1 mt-0.5">
+                      <MapPin size={9} />
+                      {item.location}
+                    </p>
+                  )}
                 </div>
-              ))}
-              {item.certificates?.length > 2 && (
-                <p className="text-[#585b70] text-xs pl-1">
-                  +{item.certificates.length - 2} more certificates
-                </p>
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {[
+                  {
+                    label: "Certs",
+                    value: item.certificates_count,
+                    color: "text-[#a6e3a1]",
+                  },
+                  {
+                    label: "Courses",
+                    value: item.courses_completed,
+                    color: "text-[#89b4fa]",
+                  },
+                  {
+                    label: "Hackathons",
+                    value: item.hackathons,
+                    color: "text-[#f38ba8]",
+                  },
+                  {
+                    label: "Workshops",
+                    value: item.workshops,
+                    color: "text-[#fab387]",
+                  },
+                ].map(({ label, value, color }) => (
+                  <div
+                    key={label}
+                    className="bg-[#313244]/40 rounded-xl p-2 text-center"
+                  >
+                    <p className={`text-sm font-bold ${color}`}>{value ?? 0}</p>
+                    <p className="text-[#585b70] text-[9px] mt-0.5">{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Projects badge */}
+              {item.projects_count > 0 && (
+                <div className="flex items-center gap-1.5 text-[#cba6f7] text-xs mb-2">
+                  <Code size={10} />
+                  {item.projects_count} project
+                  {item.projects_count > 1 ? "s" : ""}
+                </div>
+              )}
+
+              {/* Skills */}
+              {item.skills?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {item.skills.slice(0, 3).map((s) => (
+                    <span
+                      key={s}
+                      className="text-[10px] bg-[#89dceb]/15 text-[#89dceb] px-2 py-0.5 rounded-full"
+                    >
+                      {s}
+                    </span>
+                  ))}
+                  {item.skills.length > 3 && (
+                    <span className="text-[10px] text-[#585b70]">
+                      +{item.skills.length - 3}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
+          );
+        })}
 
-            <div className="flex items-center gap-3 text-xs text-[#585b70]">
-              <span className="flex items-center gap-1">
-                <BookOpen size={11} /> {item.completed_courses} courses
-              </span>
-              <span className="flex items-center gap-1">
-                <GraduationCap size={11} /> {item.certificates?.length} certs
-              </span>
-            </div>
-
-            {/* Skills */}
-            {item.user?.skills?.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {item.user.skills.slice(0, 3).map((s) => (
-                  <span
-                    key={s}
-                    className="text-[10px] bg-[#89dceb]/15 text-[#89dceb] px-2 py-0.5 rounded-full"
-                  >
-                    {s}
-                  </span>
-                ))}
-                {item.user.skills.length > 3 && (
-                  <span className="text-[10px] text-[#585b70]">
-                    +{item.user.skills.length - 3}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
         {filtered.length === 0 && (
           <div className="col-span-3 bg-[#1e1e2e] border border-[#313244] rounded-2xl py-16 text-center">
             <UserCheck size={32} className="mx-auto mb-3 text-[#313244]" />
@@ -182,197 +218,397 @@ export default function HRTalentPool() {
       {/* Candidate Profile Modal */}
       {(profile || profileLoading) && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fade-in"
-          onClick={() => setProfile(null)}
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            setProfile(null);
+            setProfileLoading(false);
+          }}
         >
           <div
-            className="bg-[#1e1e2e] border border-[#313244] rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto"
+            className="bg-[#1e1e2e] border border-[#313244] rounded-2xl w-full max-w-2xl max-h-[88vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {profileLoading ? (
-              <div className="p-10 flex items-center justify-center">
+              <div className="p-16 flex items-center justify-center">
                 <div className="w-8 h-8 rounded-full border-4 border-[#89dceb] border-t-transparent animate-spin" />
               </div>
             ) : (
-              <>
-                {/* Profile header */}
-                <div className="p-6 border-b border-[#313244]">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={
-                          profile.profile?.avatar ||
-                          `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.profile?.first_name || "U")}&background=313244&color=cdd6f4`
-                        }
-                        className="w-16 h-16 rounded-full object-cover"
-                        alt=""
-                      />
-                      <div>
-                        <h2 className="text-[#cdd6f4] font-bold text-lg">
-                          {profile.profile?.first_name}{" "}
-                          {profile.profile?.last_name}
-                        </h2>
-                        <p className="text-[#9399b2] text-sm">
-                          {profile.profile?.headline}
-                        </p>
-                        <p className="text-[#585b70] text-xs mt-0.5">
-                          {profile.profile?.location}
-                        </p>
-                        <div className="flex items-center gap-3 mt-2">
-                          {profile.profile?.github && (
-                            <a
-                              href={profile.profile.github}
-                              target="_blank"
-                              className="text-[#9399b2] hover:text-[#89dceb] transition"
-                            >
-                              <GitBranch size={14} />
-                            </a>
+              profile && (
+                <>
+                  {/* Header */}
+                  <div className="p-6 border-b border-[#313244]">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={
+                            profile.profile?.avatar ||
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent(`${profile.profile?.first_name || ""} ${profile.profile?.last_name || ""}`.trim() || "U")}&background=89dceb&color=11111b&size=200`
+                          }
+                          className="w-16 h-16 rounded-2xl object-cover border-2 border-[#313244]"
+                          alt=""
+                        />
+                        <div>
+                          <h2 className="text-[#cdd6f4] font-bold text-lg">
+                            {profile.profile?.first_name}{" "}
+                            {profile.profile?.last_name}
+                          </h2>
+                          {profile.profile?.headline && (
+                            <p className="text-[#89dceb] text-sm font-medium">
+                              {profile.profile.headline}
+                            </p>
                           )}
-                          {profile.profile?.linkedin && (
-                            <a
-                              href={profile.profile.linkedin}
-                              target="_blank"
-                              className="text-[#9399b2] hover:text-[#89dceb] transition"
-                            >
-                              <Link size={14} />
-                            </a>
+                          {profile.profile?.location && (
+                            <p className="text-[#585b70] text-xs flex items-center gap-1 mt-1">
+                              <MapPin size={10} />
+                              {profile.profile.location}
+                            </p>
                           )}
-                          {profile.profile?.website && (
-                            <a
-                              href={profile.profile.website}
-                              target="_blank"
-                              className="text-[#9399b2] hover:text-[#89dceb] transition"
-                            >
-                              <Globe size={14} />
-                            </a>
-                          )}
+                          <div className="flex items-center gap-3 mt-2">
+                            {profile.profile?.github && (
+                              <a
+                                href={profile.profile.github}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#9399b2] hover:text-[#cdd6f4]"
+                              >
+                                <GitBranch size={14} />
+                              </a>
+                            )}
+                            {profile.profile?.linkedin && (
+                              <a
+                                href={profile.profile.linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#9399b2] hover:text-[#89b4fa]"
+                              >
+                                <Link size={14} />
+                              </a>
+                            )}
+                            {profile.profile?.website && (
+                              <a
+                                href={profile.profile.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#9399b2] hover:text-[#a6e3a1]"
+                              >
+                                <Globe size={14} />
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
+                      <button
+                        onClick={() => setProfile(null)}
+                        className="text-[#585b70] hover:text-[#cdd6f4] transition p-1"
+                      >
+                        <X size={18} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setProfile(null)}
-                      className="text-[#585b70] hover:text-[#cdd6f4] transition"
-                    >
-                      <X size={18} />
-                    </button>
+
+                    {profile.profile?.bio && (
+                      <p className="text-[#9399b2] text-sm mt-4 leading-relaxed">
+                        {profile.profile.bio}
+                      </p>
+                    )}
+
+                    {profile.profile?.skills?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {profile.profile.skills.map((s) => (
+                          <span
+                            key={s}
+                            className="text-[11px] bg-[#89dceb]/15 text-[#89dceb] px-2.5 py-1 rounded-full"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  {profile.profile?.bio && (
-                    <p className="text-[#9399b2] text-sm mt-4">
-                      {profile.profile.bio}
-                    </p>
-                  )}
-
-                  {profile.profile?.skills?.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {profile.profile.skills.map((s) => (
-                        <span
-                          key={s}
-                          className="text-[11px] bg-[#89dceb]/15 text-[#89dceb] px-2.5 py-1 rounded-full"
+                  <div className="p-6 space-y-6">
+                    {/* Stats */}
+                    <div className="grid grid-cols-4 gap-3">
+                      {[
+                        {
+                          label: "Enrolled",
+                          value: profile.courses_enrolled,
+                          color: "text-[#89b4fa]",
+                        },
+                        {
+                          label: "Completed",
+                          value: profile.courses_completed,
+                          color: "text-[#a6e3a1]",
+                        },
+                        {
+                          label: "Hackathons",
+                          value: profile.hackathons,
+                          color: "text-[#f38ba8]",
+                        },
+                        {
+                          label: "Workshops",
+                          value: profile.workshops,
+                          color: "text-[#fab387]",
+                        },
+                      ].map(({ label, value, color }) => (
+                        <div
+                          key={label}
+                          className="bg-[#11111b] rounded-xl p-3 text-center"
                         >
-                          {s}
-                        </span>
+                          <p className={`text-xl font-bold ${color}`}>
+                            {value ?? 0}
+                          </p>
+                          <p className="text-[#585b70] text-xs mt-1">{label}</p>
+                        </div>
                       ))}
                     </div>
-                  )}
-                </div>
 
-                <div className="p-6 space-y-5">
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      {
-                        label: "Courses Enrolled",
-                        value: profile.courses_enrolled,
-                      },
-                      { label: "Completed", value: profile.courses_completed },
-                      {
-                        label: "Applications",
-                        value: profile.total_applications,
-                      },
-                    ].map(({ label, value }) => (
-                      <div
-                        key={label}
-                        className="bg-[#11111b] rounded-xl p-3 text-center"
-                      >
-                        <p className="text-xl font-bold text-[#89dceb]">
-                          {value}
-                        </p>
-                        <p className="text-[#585b70] text-xs mt-1">{label}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Certificates */}
-                  {profile.certificates?.length > 0 && (
+                    {/* Platform Certificates */}
                     <div>
-                      <h3 className="text-[#cdd6f4] font-semibold text-sm mb-3">
-                        Certificates
-                      </h3>
-                      <div className="space-y-2">
-                        {profile.certificates.map((cert) => (
-                          <div
-                            key={cert.id}
-                            className="flex items-center justify-between bg-[#313244]/50 rounded-xl px-3 py-2.5"
-                          >
-                            <div className="flex items-center gap-2">
-                              <GraduationCap
-                                size={14}
-                                className="text-[#a6e3a1]"
-                              />
-                              <span className="text-[#cdd6f4] text-sm">
-                                {cert.course_title}
+                      <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <GraduationCap size={12} className="text-[#a6e3a1]" />
+                        Platform Certificates
+                        <span className="ml-auto text-[#a6e3a1] font-bold normal-case">
+                          {profile.certificates?.length || 0}
+                        </span>
+                      </p>
+                      {profile.certificates?.length > 0 ? (
+                        <div className="space-y-2">
+                          {profile.certificates.map((cert) => (
+                            <div
+                              key={cert.id}
+                              className="flex items-center gap-3 bg-[#313244]/50 rounded-xl px-3 py-2.5"
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-[#a6e3a1]/20 flex items-center justify-center flex-shrink-0">
+                                <GraduationCap
+                                  size={13}
+                                  className="text-[#a6e3a1]"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[#cdd6f4] text-xs font-medium truncate">
+                                  {cert.course_title}
+                                </p>
+                                <p className="text-[#585b70] text-[10px] font-mono">
+                                  {cert.certificate_id}
+                                </p>
+                              </div>
+                              <span className="text-[#9399b2] text-[10px] flex-shrink-0">
+                                {new Date(cert.issued_at).toLocaleDateString()}
                               </span>
                             </div>
-                            <span className="text-[#585b70] text-xs">
-                              {new Date(cert.issued_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[#585b70] text-xs bg-[#11111b] rounded-xl px-3 py-4 text-center">
+                          No platform certificates yet
+                        </p>
+                      )}
                     </div>
-                  )}
 
-                  {/* Application history */}
-                  {profile.application_history?.length > 0 && (
-                    <div>
-                      <h3 className="text-[#cdd6f4] font-semibold text-sm mb-3">
-                        Application History
-                      </h3>
-                      <div className="space-y-2">
-                        {profile.application_history.map((a, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between"
-                          >
-                            <div>
-                              <p className="text-[#cdd6f4] text-xs font-medium">
-                                {a.job}
-                              </p>
-                              <p className="text-[#585b70] text-xs">
-                                {a.company}
-                              </p>
-                            </div>
-                            <span
-                              className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
-                                a.status === "hired"
-                                  ? "bg-[#a6e3a1]/20 text-[#a6e3a1]"
-                                  : a.status === "interview"
-                                    ? "bg-[#fab387]/20 text-[#fab387]"
-                                    : a.status === "rejected"
-                                      ? "bg-[#f38ba8]/20 text-[#f38ba8]"
-                                      : "bg-[#89b4fa]/20 text-[#89b4fa]"
-                              }`}
+                    {/* Extra Certificates (uploaded) */}
+                    {profile.extra_certificates?.length > 0 && (
+                      <div>
+                        <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <GraduationCap size={12} className="text-[#cba6f7]" />
+                          External Certificates
+                          <span className="ml-auto text-[#cba6f7] font-bold normal-case">
+                            {profile.extra_certificates.length}
+                          </span>
+                        </p>
+                        <div className="space-y-2">
+                          {profile.extra_certificates.map((cert) => (
+                            <div
+                              key={cert.id}
+                              className="flex items-center gap-3 bg-[#313244]/50 rounded-xl px-3 py-2.5"
                             >
-                              {a.status}
-                            </span>
-                          </div>
-                        ))}
+                              <div className="w-8 h-8 rounded-lg bg-[#cba6f7]/20 flex items-center justify-center flex-shrink-0">
+                                <GraduationCap
+                                  size={13}
+                                  className="text-[#cba6f7]"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[#cdd6f4] text-xs font-medium truncate">
+                                  {cert.title}
+                                </p>
+                                {cert.issuer && (
+                                  <p className="text-[#585b70] text-[10px]">
+                                    {cert.issuer}
+                                  </p>
+                                )}
+                              </div>
+                              {cert.file_url && (
+                                <a
+                                  href={cert.file_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[10px] text-[#cba6f7] hover:underline flex-shrink-0"
+                                >
+                                  View
+                                </a>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </>
+                    )}
+
+                    {/* Projects */}
+                    {profile.projects?.length > 0 && (
+                      <div>
+                        <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <Code size={12} className="text-[#cba6f7]" />
+                          Projects
+                          <span className="ml-auto text-[#cba6f7] font-bold normal-case">
+                            {profile.projects.length}
+                          </span>
+                        </p>
+                        <div className="space-y-2">
+                          {profile.projects.map((p) => (
+                            <div
+                              key={p.id}
+                              className="bg-[#313244]/50 rounded-xl px-3 py-3"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[#cdd6f4] text-xs font-semibold">
+                                    {p.title}
+                                  </p>
+                                  {p.description && (
+                                    <p className="text-[#585b70] text-[11px] mt-0.5 line-clamp-2">
+                                      {p.description}
+                                    </p>
+                                  )}
+                                  {p.tech_stack?.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1.5">
+                                      {p.tech_stack.map((t) => (
+                                        <span
+                                          key={t}
+                                          className="text-[9px] bg-[#cba6f7]/15 text-[#cba6f7] px-1.5 py-0.5 rounded"
+                                        >
+                                          {t}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex gap-2 ml-3 flex-shrink-0">
+                                  {p.github_url && (
+                                    <a
+                                      href={p.github_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[#9399b2] hover:text-[#cdd6f4]"
+                                    >
+                                      <GitBranch size={13} />
+                                    </a>
+                                  )}
+                                  {p.live_url && (
+                                    <a
+                                      href={p.live_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[#9399b2] hover:text-[#a6e3a1]"
+                                    >
+                                      <Globe size={13} />
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Event participations */}
+                    {profile.events?.length > 0 && (
+                      <div>
+                        <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <Calendar size={12} className="text-[#f38ba8]" />
+                          Event Participation
+                          <span className="ml-auto text-[#f38ba8] font-bold normal-case">
+                            {profile.events.length}
+                          </span>
+                        </p>
+                        <div className="space-y-1.5">
+                          {profile.events.map((e) => (
+                            <div
+                              key={e.id}
+                              className="flex items-center justify-between py-1.5 border-b border-[#313244]/50 last:border-0"
+                            >
+                              <div>
+                                <p className="text-[#cdd6f4] text-xs font-medium">
+                                  {e.title}
+                                </p>
+                                <p className="text-[#585b70] text-[10px]">
+                                  {new Date(e.start_date).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`text-[10px] px-2 py-0.5 rounded-full capitalize ${
+                                    e.event_type === "hackathon"
+                                      ? "bg-[#f38ba8]/15 text-[#f38ba8]"
+                                      : e.event_type === "workshop"
+                                        ? "bg-[#fab387]/15 text-[#fab387]"
+                                        : "bg-[#89b4fa]/15 text-[#89b4fa]"
+                                  }`}
+                                >
+                                  {e.event_type}
+                                </span>
+                                <span className="text-[10px] text-[#a6e3a1] capitalize">
+                                  {e.status}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Application history */}
+                    {profile.application_history?.length > 0 && (
+                      <div>
+                        <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <Briefcase size={12} />
+                          Application History
+                        </p>
+                        <div className="space-y-1.5">
+                          {profile.application_history.map((a, i) => (
+                            <div
+                              key={i}
+                              className="flex items-center justify-between py-1.5 border-b border-[#313244]/50 last:border-0"
+                            >
+                              <div>
+                                <p className="text-[#cdd6f4] text-xs font-medium">
+                                  {a.job}
+                                </p>
+                                <p className="text-[#585b70] text-[10px]">
+                                  {a.company}
+                                </p>
+                              </div>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                  a.status === "hired"
+                                    ? "bg-[#a6e3a1]/20 text-[#a6e3a1]"
+                                    : a.status === "interview"
+                                      ? "bg-[#fab387]/20 text-[#fab387]"
+                                      : a.status === "rejected"
+                                        ? "bg-[#f38ba8]/20 text-[#f38ba8]"
+                                        : "bg-[#89b4fa]/20 text-[#89b4fa]"
+                                }`}
+                              >
+                                {a.status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )
             )}
           </div>
         </div>
