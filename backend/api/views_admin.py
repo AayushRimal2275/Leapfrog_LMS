@@ -1,7 +1,6 @@
 """
 views_admin.py
 All views accessible only by Admin role.
-Admin can manage courses, lessons, quizzes, users, and view platform analytics.
 """
 
 from django.contrib.auth import get_user_model
@@ -29,7 +28,6 @@ User = get_user_model()
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def admin_dashboard(request):
-    """Platform-wide analytics for admin."""
     return Response({
         "total_users": User.objects.count(),
         "total_customers": User.objects.filter(role='customer').count(),
@@ -57,7 +55,6 @@ def admin_dashboard(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def get_all_users(request):
-    """List all users with full admin detail. Supports ?role= filter."""
     users = User.objects.all().order_by('-date_joined')
     role = request.query_params.get('role')
     if role:
@@ -78,22 +75,17 @@ def get_user_detail(request, user_id):
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def update_user_role(request):
-    """Change a user's role. Body: {user_id, role}"""
     user_id = request.data.get('user_id')
     new_role = request.data.get('role')
-
     valid_roles = [r for r, _ in UserModel.ROLE_CHOICES]
     if new_role not in valid_roles:
         return Response({"error": f"Invalid role. Choose from: {valid_roles}"}, status=400)
-
     try:
         user = User.objects.get(id=user_id)
     except User.DoesNotExist:
         return Response({"error": "User not found"}, status=404)
-
     if user == request.user:
         return Response({"error": "You cannot change your own role"}, status=400)
-
     user.role = new_role
     user.save(update_fields=['role'])
     return Response({"message": f"Role updated to '{new_role}' for {user.username}"})
@@ -116,15 +108,12 @@ def delete_user(request, user_id):
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def toggle_user_active(request, user_id):
-    """Activate or deactivate a user account."""
     try:
         user = User.objects.get(id=user_id)
     except User.DoesNotExist:
         return Response({"error": "User not found"}, status=404)
-
     if user == request.user:
         return Response({"error": "You cannot deactivate your own account"}, status=400)
-
     user.is_active = not user.is_active
     user.save(update_fields=['is_active'])
     status_str = "activated" if user.is_active else "deactivated"
@@ -141,13 +130,12 @@ def create_course(request):
     serializer = CourseSerializer(data=request.data)
     if serializer.is_valid():
         course = serializer.save(created_by=request.user)
-        # Notify all customers
         from .models import Notification
         customers = User.objects.filter(role='customer', is_active=True)
         notifs = [Notification(
             user=c, type='new_course',
             title=f"New Course: {course.title}",
-            message=f"A new {course.level} course '{course.title}' is now available. Start learning today!",
+            message=f"A new {course.level} course '{course.title}' is now available!",
             link='/courses'
         ) for c in customers]
         Notification.objects.bulk_create(notifs)
@@ -162,7 +150,6 @@ def update_course(request, course_id):
         course = Course.objects.get(id=course_id)
     except Course.DoesNotExist:
         return Response({"error": "Course not found"}, status=404)
-
     serializer = CourseSerializer(course, data=request.data, partial=request.method == 'PATCH')
     if serializer.is_valid():
         serializer.save()
@@ -177,7 +164,7 @@ def delete_course(request, course_id):
         course = Course.objects.get(id=course_id)
     except Course.DoesNotExist:
         return Response({"error": "Course not found"}, status=404)
-    course.is_active = False  # Soft delete
+    course.is_active = False
     course.save(update_fields=['is_active'])
     return Response({"message": "Course deactivated"})
 
@@ -193,7 +180,6 @@ def create_lesson(request, course_id):
         course = Course.objects.get(id=course_id)
     except Course.DoesNotExist:
         return Response({"error": "Course not found"}, status=404)
-
     serializer = LessonSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(course=course)
@@ -208,7 +194,6 @@ def update_lesson(request, lesson_id):
         lesson = Lesson.objects.get(id=lesson_id)
     except Lesson.DoesNotExist:
         return Response({"error": "Lesson not found"}, status=404)
-
     serializer = LessonSerializer(lesson, data=request.data, partial=request.method == 'PATCH')
     if serializer.is_valid():
         serializer.save()
@@ -231,6 +216,28 @@ def delete_lesson(request, lesson_id):
 # QUIZ MANAGEMENT
 # ─────────────────────────────────────────────
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_quiz_admin(request, course_id):
+    """Get quiz + all questions (with correct answers) for a course."""
+    try:
+        course = Course.objects.get(id=course_id)
+    except Course.DoesNotExist:
+        return Response({"error": "Course not found"}, status=404)
+    try:
+        quiz = Quiz.objects.get(course=course)
+    except Quiz.DoesNotExist:
+        return Response(None, status=200)   # no quiz yet — frontend handles this
+    questions = QuestionAdminSerializer(quiz.questions.all(), many=True).data
+    return Response({
+        "id": quiz.id,
+        "title": quiz.title,
+        "time_limit_minutes": quiz.time_limit_minutes,
+        "pass_percentage": quiz.pass_percentage,
+        "questions": questions,
+    })
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def create_quiz(request, course_id):
@@ -238,15 +245,39 @@ def create_quiz(request, course_id):
         course = Course.objects.get(id=course_id)
     except Course.DoesNotExist:
         return Response({"error": "Course not found"}, status=404)
-
     if Quiz.objects.filter(course=course).exists():
         return Response({"error": "Quiz already exists for this course"}, status=400)
-
     serializer = QuizSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(course=course)
         return Response(serializer.data, status=201)
     return Response(serializer.errors, status=400)
+
+
+@api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def update_quiz(request, quiz_id):
+    """Update quiz title / time limit / pass percentage."""
+    try:
+        quiz = Quiz.objects.get(id=quiz_id)
+    except Quiz.DoesNotExist:
+        return Response({"error": "Quiz not found"}, status=404)
+    for field in ['title', 'time_limit_minutes', 'pass_percentage']:
+        if field in request.data:
+            setattr(quiz, field, request.data[field])
+    quiz.save()
+    return Response({"message": "Quiz updated"})
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def delete_quiz(request, quiz_id):
+    try:
+        quiz = Quiz.objects.get(id=quiz_id)
+    except Quiz.DoesNotExist:
+        return Response({"error": "Quiz not found"}, status=404)
+    quiz.delete()
+    return Response({"message": "Quiz deleted"})
 
 
 @api_view(['POST'])
@@ -256,12 +287,36 @@ def add_question(request, quiz_id):
         quiz = Quiz.objects.get(id=quiz_id)
     except Quiz.DoesNotExist:
         return Response({"error": "Quiz not found"}, status=404)
-
     serializer = QuestionAdminSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(quiz=quiz)
         return Response(serializer.data, status=201)
     return Response(serializer.errors, status=400)
+
+
+@api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def update_question(request, question_id):
+    try:
+        question = Question.objects.get(id=question_id)
+    except Question.DoesNotExist:
+        return Response({"error": "Question not found"}, status=404)
+    serializer = QuestionAdminSerializer(question, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def delete_question(request, question_id):
+    try:
+        question = Question.objects.get(id=question_id)
+    except Question.DoesNotExist:
+        return Response({"error": "Question not found"}, status=404)
+    question.delete()
+    return Response({"message": "Question deleted"})
 
 
 # ─────────────────────────────────────────────

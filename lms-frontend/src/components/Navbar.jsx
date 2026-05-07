@@ -145,14 +145,14 @@ export default function Navbar() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p
-                            className={`text-xs font-semibold leading-tight ${!n.is_read ? "text-[#cdd6f4]" : "text-[#9399b2]"}`}
+                            className={`text-xs font-semibold leading-tight ${!n.is_read ? "text-[#d82b2b]" : "text-[#9aa3c7]"}`}
                           >
                             {n.title}
                           </p>
-                          <p className="text-[#585b70] text-[11px] mt-0.5 line-clamp-2 leading-relaxed">
+                          <p className="text-[#eef0ff] text-[11px] mt-0.5 line-clamp-2 leading-relaxed">
                             {n.message}
                           </p>
-                          <p className="text-[#45475a] text-[10px] mt-1">
+                          <p className="text-[#adb5ff] text-[10px] mt-1">
                             {new Date(n.created_at).toLocaleDateString(
                               undefined,
                               {
