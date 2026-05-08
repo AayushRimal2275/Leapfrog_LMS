@@ -35,6 +35,7 @@ class QuestionAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = '__all__'
+        read_only_fields = ['quiz']
 
 
 class QuizSerializer(serializers.ModelSerializer):
@@ -82,7 +83,7 @@ class CourseSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     category = CourseCategorySerializer(read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
-        queryset=CourseCategory.objects.all(), source='category', write_only=True, required=False, allow_null=True
+        queryset=CourseCategory.objects.all(), source='category', write_only=True, required=False
     )
 
     class Meta:
