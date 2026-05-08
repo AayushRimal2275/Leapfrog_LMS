@@ -1,7 +1,6 @@
 """
 notifications.py
 Central place for creating notifications + sending emails.
-Import and call these from views_hr.py whenever application status changes.
 """
 
 from django.core.mail import send_mail
@@ -10,7 +9,6 @@ from .models import Notification
 
 
 def _send_email(to_email, subject, body):
-    """Send email — fails silently so it never breaks the main flow."""
     try:
         send_mail(
             subject=subject,
@@ -24,13 +22,9 @@ def _send_email(to_email, subject, body):
 
 
 def notify_status_change(application):
-    """
-    Called whenever an application status changes.
-    Creates an in-app notification and sends an email.
-    """
-    user    = application.user
-    job     = application.job
-    status  = application.status
+    user   = application.user
+    job    = application.job
+    status = application.status
 
     templates = {
         'hired': {
@@ -39,26 +33,28 @@ def notify_status_change(application):
             'message': f'Your application for "{job.title}" at {job.company} has been accepted. '
                        f'The HR team will contact you soon with next steps. Welcome aboard!',
             'subject': f'[Leapfrog Connect] You\'ve been hired at {job.company}!',
+            'link':    '/my-applications',
         },
         'interview': {
             'type':    'interview',
             'title':   f'📅 Interview scheduled — {job.title} at {job.company}',
-            'message': f'Great news! Your application for "{job.title}" at {job.company} has been shortlisted '
-                       f'for an interview. The HR team will reach out to confirm the schedule.',
+            'message': f'Your application for "{job.title}" at {job.company} has been shortlisted for an interview.',
             'subject': f'[Leapfrog Connect] Interview scheduled for {job.title}',
+            'link':    '/my-applications',
         },
         'rejected': {
             'type':    'rejected',
             'title':   f'Application update — {job.title} at {job.company}',
-            'message': f'Thank you for applying for "{job.title}" at {job.company}. Unfortunately, '
-                       f'your application was not selected at this time. Keep learning and applying!',
+            'message': f'Thank you for applying for "{job.title}" at {job.company}. Unfortunately your application was not selected at this time.',
             'subject': f'[Leapfrog Connect] Application update for {job.title}',
+            'link':    '/my-applications',
         },
         'applied': {
             'type':    'status',
             'title':   f'Application submitted — {job.title}',
             'message': f'Your application for "{job.title}" at {job.company} is under review.',
             'subject': f'[Leapfrog Connect] Application received for {job.title}',
+            'link':    '/my-applications',
         },
     }
 
@@ -66,16 +62,15 @@ def notify_status_change(application):
     if not tmpl:
         return
 
-    # Create in-app notification
+    # ✅ Fixed: use 'link' not 'application=' (model has no application FK)
     Notification.objects.create(
         user=user,
         type=tmpl['type'],
         title=tmpl['title'],
         message=tmpl['message'],
-        application=application,
+        link=tmpl['link'],
     )
 
-    # Send email
     email_body = f"""Hi {user.first_name or user.username},
 
 {tmpl['message']}
@@ -85,8 +80,7 @@ Job:     {job.title}
 Company: {job.company}
 Status:  {status.upper()}
 
-Log in to Leapfrog Connect to view your full application status:
-https://leapfrogconnect.com/my-applications
+Log in to view your application: https://leapfrogconnect.com/my-applications
 
 — Leapfrog Connect Team
 """
@@ -94,34 +88,20 @@ https://leapfrogconnect.com/my-applications
 
 
 def notify_hr_feedback(application, feedback_text):
-    """
-    Called when HR saves a note on an application.
-    Notifies the candidate that feedback was left.
-    """
     user = application.user
     job  = application.job
 
+    # ✅ Fixed: use 'link' not 'application='
     Notification.objects.create(
         user=user,
         type='feedback',
         title=f'💬 HR left feedback on your application — {job.title}',
         message=feedback_text,
-        application=application,
+        link='/my-applications',
     )
 
-    email_body = f"""Hi {user.first_name or user.username},
-
-The HR team at {job.company} has left feedback on your application for "{job.title}":
-
-"{feedback_text}"
-
-Log in to Leapfrog Connect to view your full application:
-https://leapfrogconnect.com/my-applications
-
-— Leapfrog Connect Team
-"""
     _send_email(
         user.email,
         f'[Leapfrog Connect] HR feedback on your {job.title} application',
-        email_body,
+        f'Hi {user.first_name or user.username},\n\nFeedback from {job.company}:\n"{feedback_text}"\n\n— Leapfrog Connect Team',
     )

@@ -91,6 +91,7 @@ export default function AdminEvents() {
     if (!form.title || !form.start_date || !form.end_date)
       return toast.error("Title, start and end date required");
     setSaving(true);
+    let success = false;
     try {
       if (editId) {
         await api.put(`/admin/events/${editId}/update/`, form);
@@ -99,12 +100,15 @@ export default function AdminEvents() {
         await api.post("/admin/events/create/", form);
         toast.success("Event created & customers notified!");
       }
-      setModal(null);
-      load();
+      success = true;
     } catch (e) {
       toast.error(e.response?.data?.error || "Failed to save event");
     } finally {
       setSaving(false);
+    }
+    if (success) {
+      setModal(null);
+      load();
     }
   };
 

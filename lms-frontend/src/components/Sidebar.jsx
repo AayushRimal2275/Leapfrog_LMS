@@ -13,7 +13,7 @@ import {
   UserCheck,
   ClipboardList,
   Calendar,
-  Bell,
+  X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -46,41 +46,49 @@ const hrNav = [
 ];
 
 const roleAccentColor = {
-  admin: "#f38ba8", // red - power
-  hr: "#89dceb", // teal - people
-  customer: "#cba6f7", // purple - default
+  admin: "#f38ba8",
+  hr: "#89dceb",
+  customer: "#cba6f7",
 };
 
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }) {
   const { user, logout, isAdmin, isHR } = useAuth();
 
   const navItems = isAdmin ? adminNav : isHR ? hrNav : customerNav;
   const accent = roleAccentColor[user?.role] || "#cba6f7";
   const roleLabel = isAdmin ? "Admin Panel" : isHR ? "HR Panel" : "Connect LMS";
 
-  return (
-    <div className="w-64 bg-[#181825] border-r border-[#313244] flex flex-col h-screen sticky top-0">
+  const sidebarContent = (
+    <div className="w-64 bg-[#181825] border-r border-[#313244] flex flex-col h-full">
       {/* Logo */}
       <div className="p-6 border-b border-[#313244]">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${accent}, #89b4fa)`,
-            }}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{
+                background: `linear-gradient(135deg, ${accent}, #89b4fa)`,
+              }}
+            >
+              <GraduationCap size={16} className="text-[#11111b]" />
+            </div>
+            <div>
+              <p className="font-bold text-[#cdd6f4] text-sm leading-tight">
+                Leapfrog
+              </p>
+              <p className="text-[10px] text-[#9399b2] leading-tight">
+                {roleLabel}
+              </p>
+            </div>
+          </div>
+          {/* Close button — mobile only */}
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg text-[#585b70] hover:text-[#cdd6f4] hover:bg-[#313244] transition"
           >
-            <GraduationCap size={16} className="text-[#11111b]" />
-          </div>
-          <div>
-            <p className="font-bold text-[#cdd6f4] text-sm leading-tight">
-              Leapfrog
-            </p>
-            <p className="text-[10px] text-[#9399b2] leading-tight">
-              {roleLabel}
-            </p>
-          </div>
+            <X size={16} />
+          </button>
         </div>
-        {/* Role badge */}
         {user?.role !== "customer" && (
           <div
             className="mt-3 text-[10px] font-semibold px-2 py-1 rounded-lg inline-block uppercase tracking-wider"
@@ -98,6 +106,7 @@ export default function Sidebar() {
             key={to + label}
             to={to}
             end={to === "/" || to === "/admin" || to === "/hr"}
+            onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive
@@ -121,7 +130,7 @@ export default function Sidebar() {
               user?.avatar ||
               `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.first_name || user?.username || "U")}&background=313244&color=cdd6f4`
             }
-            className="w-8 h-8 rounded-full object-cover"
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
             alt="avatar"
           />
           <div className="flex-1 min-w-0">
@@ -140,5 +149,29 @@ export default function Sidebar() {
         </button>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* Desktop — always visible */}
+      <div className="hidden lg:flex w-64 flex-shrink-0 h-screen sticky top-0">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile — slide-in overlay */}
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+            onClick={onClose}
+          />
+          {/* Drawer */}
+          <div className="fixed inset-y-0 left-0 z-50 lg:hidden flex">
+            {sidebarContent}
+          </div>
+        </>
+      )}
+    </>
   );
 }

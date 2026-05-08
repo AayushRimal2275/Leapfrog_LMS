@@ -82,7 +82,7 @@ class CourseSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     category = CourseCategorySerializer(read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
-        queryset=CourseCategory.objects.all(), source='category', write_only=True, required=False
+        queryset=CourseCategory.objects.all(), source='category', write_only=True, required=False, allow_null=True
     )
 
     class Meta:

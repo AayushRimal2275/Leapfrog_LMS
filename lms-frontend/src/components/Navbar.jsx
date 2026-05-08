@@ -10,6 +10,7 @@ import {
   GraduationCap,
   BookOpen,
   Briefcase,
+  Menu,
 } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -42,7 +43,7 @@ const typeBorder = {
   certificate: "border-l-[#a6e3a1]",
 };
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }) {
   const { user, isAdmin, isHR } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
@@ -91,7 +92,16 @@ export default function Navbar() {
     : "";
 
   return (
-    <div className="h-14 border-b border-[#313244] bg-[#11111b] flex items-center justify-end px-6 sticky top-0 z-30">
+    <div className="h-14 border-b border-[#313244] bg-[#11111b] flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
+      {/* Hamburger — always visible on left */}
+      <button
+        onClick={onMenuClick}
+        className="p-2 rounded-xl text-[#9399b2] hover:bg-[#1e1e2e] hover:text-[#cdd6f4] transition"
+        aria-label="Open menu"
+      >
+        <Menu size={20} />
+      </button>
+
       <div className="flex items-center gap-3">
         {showBell && (
           <div className="relative" ref={ref}>

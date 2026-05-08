@@ -215,10 +215,16 @@ def create_event(request):
     from django.contrib.auth import get_user_model
     User = get_user_model()
     customers = User.objects.filter(role='customer', is_active=True)
+    # Refresh from DB so start_date is a proper datetime object, not a raw string
+    event.refresh_from_db()
+    try:
+        date_str = event.start_date.strftime('%b %d, %Y')
+    except Exception:
+        date_str = str(event.start_date)[:10]
     notifs = [Notification(
         user=c, type='new_event',
         title=f"New {event.event_type.title()}: {event.title}",
-        message=f"{event.title} is happening on {event.start_date.strftime('%b %d, %Y')} at {event.location}. Register now!",
+        message=f"{event.title} is happening on {date_str} at {event.location}. Register now!",
         link='/events'
     ) for c in customers]
     Notification.objects.bulk_create(notifs)
