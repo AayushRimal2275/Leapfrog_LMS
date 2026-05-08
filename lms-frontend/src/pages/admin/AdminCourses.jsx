@@ -141,11 +141,7 @@ export default function AdminCourses() {
               .map((t) => t.trim())
               .filter(Boolean)
           : courseForm.tags || [];
-      const payload = {
-        ...courseForm,
-        tags: JSON.stringify(tagsArray),
-        category_id: courseForm.category_id || null,
-      };
+      const payload = { ...courseForm, tags: JSON.stringify(tagsArray) };
       if (editingCourse) {
         await api.patch(`/admin/courses/${editingCourse}/update/`, payload);
         toast.success("Course updated ✅");
@@ -289,8 +285,15 @@ export default function AdminCourses() {
       setQuestionModal(null);
       // refresh quiz for whichever course is expanded
       if (expandedCourse) loadCourseDetail(expandedCourse);
-    } catch {
-      toast.error("Failed to save question");
+    } catch (err) {
+      const detail = err?.response?.data;
+      console.error("Save question error:", JSON.stringify(detail));
+      const msg = detail
+        ? Object.entries(detail)
+            .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
+            .join(" | ")
+        : "Failed to save question";
+      toast.error(msg);
     }
   };
   const handleDeleteQuestion = async (courseId, questionId) => {
@@ -329,7 +332,7 @@ export default function AdminCourses() {
                 (h) => (
                   <th
                     key={h}
-                    className="text-left text-[#cecfd3] font-medium px-5 py-3 text-xs"
+                    className="text-left text-[#9399b2] font-medium px-5 py-3 text-xs"
                   >
                     {h}
                   </th>
@@ -372,12 +375,12 @@ export default function AdminCourses() {
                   <td className="px-5 py-3">
                     <LevelBadge level={course.level} />
                   </td>
-                  <td className="px-5 py-3 text-[#c5c6c9]">
+                  <td className="px-5 py-3 text-[#9399b2]">
                     {course.lesson_count}
                   </td>
                   <td className="px-5 py-3">
                     <span
-                      className={`text-[11px] px-2 py-1 rounded-full font-medium ${course.quiz ? "bg-[#89b4fa]/20 text-[#89b4fa]" : "bg-[#45475a]/40 text-[#a9aab3]"}`}
+                      className={`text-[11px] px-2 py-1 rounded-full font-medium ${course.quiz ? "bg-[#89b4fa]/20 text-[#89b4fa]" : "bg-[#45475a]/40 text-[#585b70]"}`}
                     >
                       {course.quiz ? "Has Quiz" : "No Quiz"}
                     </span>
@@ -456,7 +459,7 @@ export default function AdminCourses() {
                                   <p className="text-[#cdd6f4] text-sm font-medium">
                                     {lesson.title}
                                   </p>
-                                  <p className="text-[#9d9d9e] text-[11px]">
+                                  <p className="text-[#585b70] text-[11px]">
                                     Order {lesson.order} ·{" "}
                                     {lesson.duration_minutes} min
                                   </p>
@@ -501,7 +504,7 @@ export default function AdminCourses() {
                           </div>
 
                           {!courseQuiz[course.id] ? (
-                            <p className="text-[#c6c9cf] text-xs italic">
+                            <p className="text-[#585b70] text-xs italic">
                               No quiz yet. Create one so students can get
                               certified.
                             </p>
