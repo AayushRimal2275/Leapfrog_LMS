@@ -276,10 +276,10 @@ export default function AdminCourses() {
         );
         toast.success("Question updated");
       } else {
-        await api.post(
-          `/admin/quiz/${questionModal.quizId}/questions/add/`,
-          questionForm,
-        );
+        await api.post(`/admin/quiz/${questionModal.quizId}/questions/add/`, {
+          ...questionForm,
+          quiz: questionModal.quizId,
+        });
         toast.success("Question added");
       }
       setQuestionModal(null);
