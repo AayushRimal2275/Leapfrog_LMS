@@ -35,7 +35,6 @@ class QuestionAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = '__all__'
-        read_only_fields = ['quiz']
 
 
 class QuizSerializer(serializers.ModelSerializer):
@@ -185,7 +184,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = ['id', 'job', 'status', 'cover_letter', 'applied_at', 'updated_at']
+        fields = ['id', 'job', 'status', 'cover_letter', 'applied_at', 'updated_at', 'hr_notes']
 
 
 class ApplicationHRSerializer(serializers.ModelSerializer):
