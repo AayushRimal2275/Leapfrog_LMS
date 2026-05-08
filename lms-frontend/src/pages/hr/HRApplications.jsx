@@ -68,7 +68,6 @@ export default function HRApplications() {
       });
       toast.success(`Moved to ${newStatus}`);
       load();
-      // Update detailApp status in place too
       if (detailApp?.id === appId)
         setDetailApp((a) => ({ ...a, status: newStatus }));
     } catch {
@@ -92,7 +91,6 @@ export default function HRApplications() {
     }
   };
 
-  // Open detail panel: load full candidate profile from talent-pool endpoint
   const openDetail = (app) => {
     setDetailApp(app);
     setCandidateProfile(null);
@@ -116,7 +114,7 @@ export default function HRApplications() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[#cdd6f4]">Applications</h1>
-            <p className="text-[#9399b2] text-sm mt-1">{apps.length} total</p>
+            <p className="text-[#bac2de] text-sm mt-1">{apps.length} total</p>
           </div>
         </div>
 
@@ -125,13 +123,13 @@ export default function HRApplications() {
           <div className="relative flex-1 min-w-40">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9399b2]"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#bac2de]"
             />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="w-full bg-[#1e1e2e] border border-[#313244] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#cdd6f4] placeholder-[#45475a] focus:outline-none focus:border-[#89dceb] transition"
+              className="w-full bg-[#1e1e2e] border border-[#313244] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#cdd6f4] placeholder-[#6c7086] focus:outline-none focus:border-[#89dceb] transition"
             />
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -139,7 +137,7 @@ export default function HRApplications() {
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-3 py-2 rounded-xl text-xs font-medium transition capitalize ${statusFilter === s ? "bg-[#89dceb] text-[#11111b]" : "bg-[#1e1e2e] border border-[#313244] text-[#9399b2] hover:border-[#585b70]"}`}
+                className={`px-3 py-2 rounded-xl text-xs font-medium transition capitalize ${statusFilter === s ? "bg-[#89dceb] text-[#11111b]" : "bg-[#1e1e2e] border border-[#313244] text-[#bac2de] hover:border-[#585b70]"}`}
               >
                 {s}
               </button>
@@ -175,11 +173,11 @@ export default function HRApplications() {
                   <div className="flex-1 min-w-0">
                     <p className="text-[#cdd6f4] font-semibold text-sm">
                       {app.applicant?.first_name} {app.applicant?.last_name}
-                      <span className="text-[#585b70] text-xs font-normal ml-1.5">
+                      <span className="text-[#86c5d8] text-xs font-normal ml-1.5">
                         @{app.applicant?.username?.split("@")[0]}
                       </span>
                     </p>
-                    <p className="text-[#9399b2] text-xs mt-0.5 truncate">
+                    <p className="text-[#bac2de] text-xs mt-0.5 truncate">
                       <span className="text-[#bac2de]">{app.job?.title}</span> ·{" "}
                       {app.job?.company}
                     </p>
@@ -221,7 +219,7 @@ export default function HRApplications() {
                         setNoteModal(app);
                         setNoteText(app.hr_notes || "");
                       }}
-                      className="p-1.5 rounded-lg text-[#9399b2] hover:bg-[#313244] hover:text-[#cdd6f4] transition"
+                      className="p-1.5 rounded-lg text-[#bac2de] hover:bg-[#313244] hover:text-[#cdd6f4] transition"
                       title="Add note"
                     >
                       <MessageSquare size={13} />
@@ -230,18 +228,18 @@ export default function HRApplications() {
                     {/* Expand arrow */}
                     <ChevronRight
                       size={14}
-                      className={`text-[#585b70] transition-transform ${isOpen ? "rotate-90" : ""}`}
+                      className={`text-[#7f849c] transition-transform ${isOpen ? "rotate-90" : ""}`}
                     />
                   </div>
                 </div>
 
                 {app.hr_notes && (
-                  <p className="text-[#585b70] text-xs mt-2 pl-10 italic">
+                  <p className="text-[#ac6470] text-xs mt-2 pl-10 italic">
                     📝 {app.hr_notes}
                   </p>
                 )}
                 {app.cover_letter && !isOpen && (
-                  <p className="text-[#585b70] text-xs mt-2 pl-10 line-clamp-1 italic">
+                  <p className="text-[#7f849c] text-xs mt-2 pl-10 line-clamp-1 italic">
                     "{app.cover_letter}"
                   </p>
                 )}
@@ -254,7 +252,7 @@ export default function HRApplications() {
                 size={32}
                 className="mx-auto mb-3 text-[#313244]"
               />
-              <p className="text-sm text-[#9399b2]">No applications found</p>
+              <p className="text-sm text-[#bac2de]">No applications found</p>
             </div>
           )}
         </div>
@@ -280,7 +278,7 @@ export default function HRApplications() {
                     {detailApp.applicant?.first_name}{" "}
                     {detailApp.applicant?.last_name}
                   </p>
-                  <p className="text-[#9399b2] text-xs">
+                  <p className="text-[#bac2de] text-xs">
                     {detailApp.applicant?.email ||
                       detailApp.applicant?.username}
                   </p>
@@ -288,7 +286,7 @@ export default function HRApplications() {
               </div>
               <button
                 onClick={() => setDetailApp(null)}
-                className="text-[#585b70] hover:text-[#cdd6f4] transition p-1"
+                className="text-[#7f849c] hover:text-[#cdd6f4] transition p-1"
               >
                 <X size={16} />
               </button>
@@ -296,19 +294,19 @@ export default function HRApplications() {
 
             {/* Applied for */}
             <div className="px-5 pt-4 pb-3 bg-[#89dceb]/5 border-b border-[#313244]">
-              <p className="text-[#9399b2] text-xs mb-1">Applied for</p>
+              <p className="text-[#bac2de] text-xs mb-1">Applied for</p>
               <p className="text-[#cdd6f4] font-semibold text-sm">
                 {detailApp.job?.title}
               </p>
-              <p className="text-[#9399b2] text-xs">
+              <p className="text-[#bac2de] text-xs">
                 {detailApp.job?.company} · {detailApp.job?.location}
               </p>
               {detailApp.cover_letter && (
                 <div className="mt-3">
-                  <p className="text-[#9399b2] text-xs mb-1 font-medium">
+                  <p className="text-[#bac2de] text-xs mb-1 font-medium">
                     Cover Letter
                   </p>
-                  <p className="text-[#a6adc8] text-xs leading-relaxed italic bg-[#11111b] rounded-xl p-3">
+                  <p className="text-[#cdd6f4] text-xs leading-relaxed italic bg-[#11111b] rounded-xl p-3">
                     "{detailApp.cover_letter}"
                   </p>
                 </div>
@@ -317,7 +315,7 @@ export default function HRApplications() {
 
             {/* Status control in panel */}
             <div className="px-5 py-3 border-b border-[#313244] flex items-center justify-between">
-              <span className="text-[#9399b2] text-xs font-medium">
+              <span className="text-[#bac2de] text-xs font-medium">
                 Decision
               </span>
               <div className="flex gap-2">
@@ -331,7 +329,7 @@ export default function HRApplications() {
                       className={`text-xs px-3 py-1.5 rounded-full font-medium transition capitalize border ${
                         active
                           ? `${sc.bg} ${sc.text} border-transparent`
-                          : "border-[#313244] text-[#585b70] hover:border-[#585b70]"
+                          : "border-[#313244] text-[#7f849c] hover:border-[#585b70]"
                       }`}
                     >
                       {s}
@@ -359,13 +357,13 @@ export default function HRApplications() {
                       </p>
                     )}
                     {candidateProfile.profile?.location && (
-                      <p className="text-[#9399b2] text-xs flex items-center gap-1 mb-2">
+                      <p className="text-[#bac2de] text-xs flex items-center gap-1 mb-2">
                         <MapPin size={10} />
                         {candidateProfile.profile.location}
                       </p>
                     )}
                     {candidateProfile.profile?.bio && (
-                      <p className="text-[#a6adc8] text-xs leading-relaxed">
+                      <p className="text-[#cdd6f4] text-xs leading-relaxed">
                         {candidateProfile.profile.bio}
                       </p>
                     )}
@@ -379,7 +377,7 @@ export default function HRApplications() {
                             href={candidateProfile.profile.github}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#9399b2] hover:text-[#cdd6f4]"
+                            className="text-[#bac2de] hover:text-[#cdd6f4]"
                           >
                             <GitBranch size={14} />
                           </a>
@@ -389,7 +387,7 @@ export default function HRApplications() {
                             href={candidateProfile.profile.linkedin}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#9399b2] hover:text-[#89b4fa]"
+                            className="text-[#bac2de] hover:text-[#89b4fa]"
                           >
                             <Link size={14} />
                           </a>
@@ -399,7 +397,7 @@ export default function HRApplications() {
                             href={candidateProfile.profile.website}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#9399b2] hover:text-[#a6e3a1]"
+                            className="text-[#bac2de] hover:text-[#a6e3a1]"
                           >
                             <Globe size={14} />
                           </a>
@@ -432,7 +430,7 @@ export default function HRApplications() {
                       <p className="text-lg font-bold text-[#89dceb]">
                         {value}
                       </p>
-                      <p className="text-[#585b70] text-[10px] mt-0.5">
+                      <p className="text-[#7f849c] text-[10px] mt-0.5">
                         {label}
                       </p>
                     </div>
@@ -442,7 +440,7 @@ export default function HRApplications() {
                 {/* Skills */}
                 {candidateProfile.profile?.skills?.length > 0 && (
                   <div>
-                    <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-2">
+                    <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-2">
                       Skills
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -458,9 +456,9 @@ export default function HRApplications() {
                   </div>
                 )}
 
-                {/* Certificates — THE KEY SECTION */}
+                {/* Certificates */}
                 <div>
-                  <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <GraduationCap size={12} className="text-[#a6e3a1]" />{" "}
                     Certificates Earned
                     <span className="ml-auto text-[#a6e3a1] font-bold normal-case">
@@ -484,11 +482,11 @@ export default function HRApplications() {
                             <p className="text-[#cdd6f4] text-xs font-medium truncate">
                               {cert.course_title}
                             </p>
-                            <p className="text-[#585b70] text-[10px] font-mono mt-0.5">
+                            <p className="text-[#7f849c] text-[10px] font-mono mt-0.5">
                               {cert.certificate_id}
                             </p>
                           </div>
-                          <span className="text-[#9399b2] text-[10px] flex-shrink-0">
+                          <span className="text-[#bac2de] text-[10px] flex-shrink-0">
                             {new Date(cert.issued_at).toLocaleDateString()}
                           </span>
                         </div>
@@ -500,7 +498,7 @@ export default function HRApplications() {
                         size={20}
                         className="mx-auto mb-1 text-[#313244]"
                       />
-                      <p className="text-[#585b70] text-xs">
+                      <p className="text-[#7f849c] text-xs">
                         No certificates yet
                       </p>
                     </div>
@@ -510,7 +508,7 @@ export default function HRApplications() {
                 {/* Application history */}
                 {candidateProfile.application_history?.length > 0 && (
                   <div>
-                    <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-2 flex items-center gap-1.5">
                       <Briefcase size={12} /> Application History
                     </p>
                     <div className="space-y-1.5">
@@ -523,7 +521,7 @@ export default function HRApplications() {
                             <p className="text-[#cdd6f4] text-xs font-medium">
                               {a.job}
                             </p>
-                            <p className="text-[#585b70] text-[10px]">
+                            <p className="text-[#7f849c] text-[10px]">
                               {a.company}
                             </p>
                           </div>
@@ -548,7 +546,7 @@ export default function HRApplications() {
 
                 {/* HR Notes */}
                 <div>
-                  <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-2">
+                  <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-2">
                     HR Notes
                   </p>
                   <textarea
@@ -566,22 +564,21 @@ export default function HRApplications() {
                     }}
                     rows={3}
                     placeholder="Write internal notes about this candidate..."
-                    className="w-full bg-[#11111b] border border-[#313244] rounded-xl px-3 py-2.5 text-xs text-[#cdd6f4] placeholder-[#45475a] focus:outline-none focus:border-[#89dceb] transition resize-none"
+                    className="w-full bg-[#11111b] border border-[#313244] rounded-xl px-3 py-2.5 text-xs text-[#cdd6f4] placeholder-[#6c7086] focus:outline-none focus:border-[#89dceb] transition resize-none"
                   />
-                  <p className="text-[#585b70] text-[10px] mt-1">
+                  <p className="text-[#7f849c] text-[10px] mt-1">
                     Notes auto-save when you click away
                   </p>
                 </div>
               </div>
             ) : (
-              /* Not in talent pool yet (no certificates) — still show what we have */
+              /* Not in talent pool yet */
               <div className="p-5 space-y-4">
                 <div className="bg-[#fab387]/10 border border-[#fab387]/30 rounded-xl px-4 py-3 text-xs text-[#fab387]">
                   ⚠️ This candidate hasn't earned any certificates yet. Review
                   their cover letter and application carefully.
                 </div>
 
-                {/* applicant basic info from application data */}
                 {detailApp.applicant?.headline && (
                   <p className="text-[#89dceb] text-sm font-medium">
                     {detailApp.applicant.headline}
@@ -589,7 +586,7 @@ export default function HRApplications() {
                 )}
                 {detailApp.applicant?.skills?.length > 0 && (
                   <div>
-                    <p className="text-[#9399b2] text-xs font-medium mb-2">
+                    <p className="text-[#bac2de] text-xs font-medium mb-2">
                       Skills
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -606,7 +603,7 @@ export default function HRApplications() {
                 )}
 
                 <div>
-                  <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-2">
+                  <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-2">
                     HR Notes
                   </p>
                   <textarea
@@ -622,7 +619,7 @@ export default function HRApplications() {
                     }}
                     rows={3}
                     placeholder="Write internal notes..."
-                    className="w-full bg-[#11111b] border border-[#313244] rounded-xl px-3 py-2.5 text-xs text-[#cdd6f4] placeholder-[#45475a] focus:outline-none focus:border-[#89dceb] transition resize-none"
+                    className="w-full bg-[#11111b] border border-[#313244] rounded-xl px-3 py-2.5 text-xs text-[#cdd6f4] placeholder-[#6c7086] focus:outline-none focus:border-[#89dceb] transition resize-none"
                   />
                 </div>
               </div>
@@ -645,25 +642,25 @@ export default function HRApplications() {
               <h2 className="text-[#cdd6f4] font-semibold text-sm">HR Notes</h2>
               <button
                 onClick={() => setNoteModal(null)}
-                className="text-[#585b70] hover:text-[#cdd6f4]"
+                className="text-[#7f849c] hover:text-[#cdd6f4]"
               >
                 <X size={16} />
               </button>
             </div>
-            <p className="text-[#9399b2] text-xs mb-3">
+            <p className="text-[#bac2de] text-xs mb-3">
               {noteModal.applicant?.first_name} — {noteModal.job?.title}
             </p>
             <textarea
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
               rows={4}
-              className="w-full bg-[#11111b] border border-[#313244] rounded-xl px-3 py-2.5 text-sm text-[#cdd6f4] placeholder-[#45475a] focus:outline-none focus:border-[#89dceb] transition resize-none"
+              className="w-full bg-[#11111b] border border-[#313244] rounded-xl px-3 py-2.5 text-sm text-[#cdd6f4] placeholder-[#6c7086] focus:outline-none focus:border-[#89dceb] transition resize-none"
               placeholder="Internal notes about this candidate..."
             />
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setNoteModal(null)}
-                className="flex-1 border border-[#313244] text-[#9399b2] py-2 rounded-xl text-sm hover:border-[#585b70] transition"
+                className="flex-1 border border-[#313244] text-[#bac2de] py-2 rounded-xl text-sm hover:border-[#585b70] transition"
               >
                 Cancel
               </button>

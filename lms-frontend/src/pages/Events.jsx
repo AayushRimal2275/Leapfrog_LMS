@@ -29,7 +29,7 @@ const TYPE_COLORS = {
 const STATUS_COLORS = {
   upcoming: "text-[#a6e3a1]",
   ongoing: "text-[#fab387]",
-  completed: "text-[#585b70]",
+  completed: "text-[#7f849c]",
   cancelled: "text-[#f38ba8]",
 };
 
@@ -39,7 +39,7 @@ export default function Events() {
   const [myEvents, setMyEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("all");
-  const [tab, setTab] = useState("all"); // all | mine
+  const [tab, setTab] = useState("all");
 
   const load = () => {
     Promise.all([api.get("/events/"), api.get("/my-events/")])
@@ -92,7 +92,7 @@ export default function Events() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#cdd6f4]">Events</h1>
-          <p className="text-[#9399b2] text-sm mt-1">
+          <p className="text-[#bac2de] text-sm mt-1">
             Hackathons, workshops, webinars & bootcamps
           </p>
         </div>
@@ -105,7 +105,7 @@ export default function Events() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition capitalize ${tab === t ? "bg-[#f38ba8] text-[#11111b]" : "text-[#9399b2] hover:text-[#cdd6f4]"}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition capitalize ${tab === t ? "bg-[#f38ba8] text-[#11111b]" : "text-[#bac2de] hover:text-[#cdd6f4]"}`}
             >
               {t === "mine" ? `My Events (${myEvents.length})` : "All Events"}
             </button>
@@ -123,7 +123,7 @@ export default function Events() {
                     ? c
                       ? `${c.bg} ${c.text} ${c.border}`
                       : "bg-[#f38ba8]/15 text-[#f38ba8] border-[#f38ba8]/30"
-                    : "bg-[#1e1e2e] border-[#313244] text-[#9399b2] hover:border-[#585b70]"
+                    : "bg-[#1e1e2e] border-[#313244] text-[#bac2de] hover:border-[#585b70]"
                 }`}
               >
                 {t === "all" ? "All Types" : t}
@@ -137,7 +137,7 @@ export default function Events() {
       {filtered.length === 0 ? (
         <div className="bg-[#1e1e2e] border border-[#313244] rounded-2xl py-20 text-center">
           <Calendar size={36} className="mx-auto mb-3 text-[#313244]" />
-          <p className="text-[#9399b2]">No events found</p>
+          <p className="text-[#bac2de]">No events found</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -188,12 +188,12 @@ export default function Events() {
                   <h3 className="text-[#cdd6f4] font-semibold text-sm mb-2 leading-snug">
                     {e.title}
                   </h3>
-                  <p className="text-[#9399b2] text-xs leading-relaxed line-clamp-2 mb-3 flex-1">
+                  <p className="text-[#bac2de] text-xs leading-relaxed line-clamp-2 mb-3 flex-1">
                     {e.description}
                   </p>
 
                   <div className="space-y-1.5 mb-4">
-                    <div className="flex items-center gap-1.5 text-[#585b70] text-xs">
+                    <div className="flex items-center gap-1.5 text-[#7f849c] text-xs">
                       <Clock size={11} />
                       {new Date(e.start_date).toLocaleDateString(undefined, {
                         month: "short",
@@ -206,11 +206,11 @@ export default function Events() {
                         day: "numeric",
                       })}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[#585b70] text-xs">
+                    <div className="flex items-center gap-1.5 text-[#7f849c] text-xs">
                       <MapPin size={11} />
                       {e.location}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[#585b70] text-xs">
+                    <div className="flex items-center gap-1.5 text-[#7f849c] text-xs">
                       <Users size={11} />
                       {e.registered_count}/{e.max_participants} registered
                       {e.is_full && !isRegistered && (
@@ -230,7 +230,7 @@ export default function Events() {
                       )}
                     </span>
                     {isPast ? (
-                      <span className="text-[#585b70] text-xs capitalize">
+                      <span className="text-[#7f849c] text-xs capitalize">
                         {e.status}
                       </span>
                     ) : isRegistered ? (
@@ -251,7 +251,7 @@ export default function Events() {
                         disabled={isFull}
                         className={`text-xs px-4 py-2 rounded-xl font-semibold transition ${
                           isFull
-                            ? "bg-[#313244] text-[#585b70] cursor-not-allowed"
+                            ? "bg-[#313244] text-[#7f849c] cursor-not-allowed"
                             : `${tc.bg} ${tc.text} border ${tc.border} hover:opacity-80`
                         }`}
                       >

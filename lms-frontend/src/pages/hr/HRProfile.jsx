@@ -31,18 +31,18 @@ function Field({
   textarea,
 }) {
   const inputClass =
-    "w-full bg-[#313244] border border-[#45475a] rounded-xl py-2.5 text-sm text-[#cdd6f4] placeholder-[#45475a] focus:outline-none focus:border-[#89dceb] transition " +
+    "w-full bg-[#313244] border border-[#45475a] rounded-xl py-2.5 text-sm text-[#cdd6f4] placeholder-[#6c7086] focus:outline-none focus:border-[#89dceb] transition " +
     (Icon ? "pl-9 pr-3.5" : "px-3.5");
   return (
     <div>
       {label && (
-        <label className="block text-xs text-[#9399b2] font-medium mb-1.5">
+        <label className="block text-xs text-[#bac2de] font-medium mb-1.5">
           {label}
         </label>
       )}
       <div className="relative">
         {Icon && (
-          <span className="absolute left-3 top-2.5 text-[#9399b2] pointer-events-none flex">
+          <span className="absolute left-3 top-2.5 text-[#bac2de] pointer-events-none flex">
             <Icon size={14} />
           </span>
         )}
@@ -159,7 +159,7 @@ export default function HRProfile() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#cdd6f4]">HR Profile</h1>
-          <p className="text-[#9399b2] text-sm mt-0.5">
+          <p className="text-[#bac2de] text-sm mt-0.5">
             {editing ? "Editing your profile" : "Your recruiter account"}
           </p>
         </div>
@@ -168,7 +168,7 @@ export default function HRProfile() {
             <>
               <button
                 onClick={() => setEditing(false)}
-                className="border border-[#313244] text-[#9399b2] px-3 py-2 rounded-xl text-sm hover:bg-[#1e1e2e] transition"
+                className="border border-[#313244] text-[#bac2de] px-3 py-2 rounded-xl text-sm hover:bg-[#1e1e2e] transition"
               >
                 Cancel
               </button>
@@ -223,7 +223,7 @@ export default function HRProfile() {
               className="bg-[#1e1e2e] border border-[#313244] rounded-xl p-3 text-center"
             >
               <p className={`text-xl font-bold ${color}`}>{value}</p>
-              <p className="text-[#585b70] text-xs mt-1">{label}</p>
+              <p className="text-[#bac2de] text-xs mt-1">{label}</p>
             </div>
           ))}
         </div>
@@ -232,7 +232,7 @@ export default function HRProfile() {
       {/* Pipeline quick view */}
       {stats?.pipeline && (
         <div className="bg-[#1e1e2e] border border-[#313244] rounded-xl px-5 py-3 flex items-center gap-6 flex-wrap">
-          <span className="text-[#9399b2] text-xs font-medium uppercase tracking-wider">
+          <span className="text-[#bac2de] text-xs font-medium uppercase tracking-wider">
             Pipeline
           </span>
           {Object.entries(stats.pipeline).map(([status, count]) => {
@@ -247,7 +247,7 @@ export default function HRProfile() {
                 <span className={`font-bold text-lg ${colors[status]}`}>
                   {count}
                 </span>
-                <span className="text-[#585b70] text-xs capitalize">
+                <span className="text-[#bac2de] text-xs capitalize">
                   {status}
                 </span>
               </div>
@@ -262,7 +262,7 @@ export default function HRProfile() {
         <span className="text-[#89dceb] text-sm font-medium">
           HR / Recruiter Account
         </span>
-        <span className="text-[#9399b2] text-xs ml-auto">
+        <span className="text-[#bac2de] text-xs ml-auto">
           Hiring & talent management
         </span>
       </div>
@@ -292,20 +292,20 @@ export default function HRProfile() {
               )}
               <div className="flex flex-col gap-1 mt-2">
                 {user.email && (
-                  <p className="text-[#9399b2] text-xs flex items-center gap-1.5">
+                  <p className="text-[#bac2de] text-xs flex items-center gap-1.5">
                     <Mail size={12} />
                     {user.email}
                   </p>
                 )}
                 {user.location && (
-                  <p className="text-[#9399b2] text-xs flex items-center gap-1.5">
+                  <p className="text-[#bac2de] text-xs flex items-center gap-1.5">
                     <MapPin size={12} />
                     {user.location}
                   </p>
                 )}
               </div>
               {user.bio && (
-                <p className="text-[#a6adc8] text-sm mt-3 leading-relaxed">
+                <p className="text-[#cdd6f4] text-sm mt-3 leading-relaxed">
                   {user.bio}
                 </p>
               )}
@@ -316,7 +316,7 @@ export default function HRProfile() {
                       href={user.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-[#9399b2] hover:text-[#cdd6f4] transition text-xs"
+                      className="flex items-center gap-1.5 text-[#bac2de] hover:text-[#cdd6f4] transition text-xs"
                     >
                       <GitBranch size={14} />
                       GitHub
@@ -327,7 +327,7 @@ export default function HRProfile() {
                       href={user.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-[#9399b2] hover:text-[#89b4fa] transition text-xs"
+                      className="flex items-center gap-1.5 text-[#bac2de] hover:text-[#89b4fa] transition text-xs"
                     >
                       <Link size={14} />
                       LinkedIn
@@ -338,7 +338,7 @@ export default function HRProfile() {
                       href={user.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-[#9399b2] hover:text-[#a6e3a1] transition text-xs"
+                      className="flex items-center gap-1.5 text-[#bac2de] hover:text-[#a6e3a1] transition text-xs"
                     >
                       <Globe size={14} />
                       Website
@@ -350,7 +350,7 @@ export default function HRProfile() {
           )}
 
           {editing && (
-            <div className="space-y-4">
+            <div className="space-y-4 ">
               <Field
                 icon={User}
                 label="Avatar URL"
@@ -400,7 +400,7 @@ export default function HRProfile() {
                 textarea
               />
               <div className="space-y-2.5">
-                <p className="text-xs text-[#9399b2] font-medium uppercase tracking-wider">
+                <p className="text-xs text-[#cdd6f4] font-medium uppercase tracking-wider">
                   Social links
                 </p>
                 <Field
@@ -435,7 +435,7 @@ export default function HRProfile() {
         </h3>
         <div className="flex flex-wrap gap-2 mb-3">
           {user.skills.length === 0 && !editing && (
-            <p className="text-[#9399b2] text-sm">No skills added.</p>
+            <p className="text-[#bac2de] text-sm">No skills added.</p>
           )}
           {user.skills.map((skill, i) => (
             <span
@@ -446,7 +446,7 @@ export default function HRProfile() {
               {editing && (
                 <button
                   onClick={() => removeSkill(i)}
-                  className="text-[#9399b2] hover:text-[#f38ba8] transition"
+                  className="text-[#bac2de] hover:text-[#f38ba8] transition"
                 >
                   <X size={11} />
                 </button>
@@ -460,7 +460,7 @@ export default function HRProfile() {
               value={newSkill}
               onChange={(e) => setNewSkill(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addSkill()}
-              className="flex-1 bg-[#313244] border border-[#45475a] rounded-xl py-2.5 px-3.5 text-sm text-[#cdd6f4] placeholder-[#45475a] focus:outline-none focus:border-[#89dceb] transition"
+              className="flex-1 bg-[#313244] border border-[#45475a] rounded-xl py-2.5 px-3.5 text-sm text-[#cdd6f4] placeholder-[#6c7086] focus:outline-none focus:border-[#89dceb] transition"
               placeholder="e.g. Talent Acquisition, Screening..."
             />
             <button
@@ -481,23 +481,23 @@ export default function HRProfile() {
         </h3>
         <div className="space-y-2 text-sm">
           <div className="flex items-center justify-between py-2 border-b border-[#313244]">
-            <span className="text-[#9399b2]">Username</span>
+            <span className="text-[#bac2de]">Username</span>
             <span className="text-[#cdd6f4] font-mono text-xs">
               {user.username}
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-[#313244]">
-            <span className="text-[#9399b2]">Role</span>
+            <span className="text-[#bac2de]">Role</span>
             <span className="text-[#89dceb] font-medium text-xs uppercase">
               HR / Recruiter
             </span>
           </div>
           <div className="flex items-center justify-between py-2">
-            <span className="text-[#9399b2]">Email</span>
+            <span className="text-[#bac2de]">Email</span>
             <span className="text-[#cdd6f4] text-xs">{user.email}</span>
           </div>
         </div>
-        <p className="text-[#585b70] text-xs mt-4">
+        <p className="text-[#7f849c] text-xs mt-4">
           To change your password, contact your system administrator.
         </p>
       </div>

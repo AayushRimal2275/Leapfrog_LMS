@@ -93,9 +93,18 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold text-[#cdd6f4]">
           Admin Dashboard <span className="text-[#f38ba8]">⚙️</span>
         </h1>
-        <p className="text-[#9399b2] text-sm mt-1">
+        {/* <p className="text-[#9399b2] text-sm mt-1">
           Platform-wide overview — welcome back,{" "}
           {user?.first_name || user?.username}
+        </p> */}
+        <p className="text-sm font-semibold text-[#cdd6f4]">
+          Good{" "}
+          {new Date().getHours() < 12
+            ? "morning"
+            : new Date().getHours() < 17
+              ? "afternoon"
+              : "evening"}
+          , <span className="text-[#f38ba8]">{user.first_name}</span> 👋
         </p>
       </div>
 
@@ -238,11 +247,11 @@ export default function AdminDashboard() {
             key={label}
             className="bg-[#1e1e2e] border border-[#313244] rounded-2xl p-4"
           >
-            <p className="text-[#9399b2] text-xs mb-1">{label}</p>
+            <p className="text-[#dfe1e9] text-xs mb-1">{label}</p>
             <p className="text-2xl font-bold text-[#cdd6f4]" style={{ color }}>
               {value}
             </p>
-            <p className="text-[#585b70] text-xs mt-1">{sub}</p>
+            <p className="text-[#bbbcc5] text-xs mt-1">{sub}</p>
           </div>
         ))}
       </div>

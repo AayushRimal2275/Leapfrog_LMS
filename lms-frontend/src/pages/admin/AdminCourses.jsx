@@ -329,7 +329,7 @@ export default function AdminCourses() {
                 (h) => (
                   <th
                     key={h}
-                    className="text-left text-[#9399b2] font-medium px-5 py-3 text-xs"
+                    className="text-left text-[#cecfd3] font-medium px-5 py-3 text-xs"
                   >
                     {h}
                   </th>
@@ -372,12 +372,12 @@ export default function AdminCourses() {
                   <td className="px-5 py-3">
                     <LevelBadge level={course.level} />
                   </td>
-                  <td className="px-5 py-3 text-[#9399b2]">
+                  <td className="px-5 py-3 text-[#c5c6c9]">
                     {course.lesson_count}
                   </td>
                   <td className="px-5 py-3">
                     <span
-                      className={`text-[11px] px-2 py-1 rounded-full font-medium ${course.quiz ? "bg-[#89b4fa]/20 text-[#89b4fa]" : "bg-[#45475a]/40 text-[#585b70]"}`}
+                      className={`text-[11px] px-2 py-1 rounded-full font-medium ${course.quiz ? "bg-[#89b4fa]/20 text-[#89b4fa]" : "bg-[#45475a]/40 text-[#a9aab3]"}`}
                     >
                       {course.quiz ? "Has Quiz" : "No Quiz"}
                     </span>
@@ -456,7 +456,7 @@ export default function AdminCourses() {
                                   <p className="text-[#cdd6f4] text-sm font-medium">
                                     {lesson.title}
                                   </p>
-                                  <p className="text-[#585b70] text-[11px]">
+                                  <p className="text-[#9d9d9e] text-[11px]">
                                     Order {lesson.order} ·{" "}
                                     {lesson.duration_minutes} min
                                   </p>
@@ -501,7 +501,7 @@ export default function AdminCourses() {
                           </div>
 
                           {!courseQuiz[course.id] ? (
-                            <p className="text-[#585b70] text-xs italic">
+                            <p className="text-[#c6c9cf] text-xs italic">
                               No quiz yet. Create one so students can get
                               certified.
                             </p>

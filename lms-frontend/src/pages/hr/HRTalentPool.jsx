@@ -40,7 +40,6 @@ export default function HRTalentPool() {
     load();
   }, [courseFilter]);
 
-  // Backend returns flat: { id, first_name, last_name, avatar, headline, skills, certificates_count, ... }
   const filtered = search
     ? talent.filter(
         (t) =>
@@ -69,7 +68,7 @@ export default function HRTalentPool() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-[#cdd6f4]">Talent Pool</h1>
-        <p className="text-[#9399b2] text-sm mt-1">
+        <p className="text-[#bac2de] text-sm mt-1">
           {filtered.length} certified candidates
         </p>
       </div>
@@ -79,13 +78,13 @@ export default function HRTalentPool() {
         <div className="relative flex-1 min-w-48">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9399b2]"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#bac2de]"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, headline or skill..."
-            className="w-full bg-[#1e1e2e] border border-[#313244] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#cdd6f4] placeholder-[#45475a] focus:outline-none focus:border-[#89dceb] transition"
+            className="w-full bg-[#1e1e2e] border border-[#313244] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#cdd6f4] placeholder-[#6c7086] focus:outline-none focus:border-[#89dceb] transition"
           />
         </div>
         <select
@@ -128,11 +127,11 @@ export default function HRTalentPool() {
                   <p className="text-[#cdd6f4] font-semibold text-sm">
                     {fullName}
                   </p>
-                  <p className="text-[#9399b2] text-xs truncate">
+                  <p className="text-[#bac2de] text-xs truncate">
                     {item.headline || item.email}
                   </p>
                   {item.location && (
-                    <p className="text-[#585b70] text-xs flex items-center gap-1 mt-0.5">
+                    <p className="text-[#bac2de] text-xs flex items-center gap-1 mt-0.5">
                       <MapPin size={9} />
                       {item.location}
                     </p>
@@ -169,7 +168,7 @@ export default function HRTalentPool() {
                     className="bg-[#313244]/40 rounded-xl p-2 text-center"
                   >
                     <p className={`text-sm font-bold ${color}`}>{value ?? 0}</p>
-                    <p className="text-[#585b70] text-[9px] mt-0.5">{label}</p>
+                    <p className="text-[#bac2de] text-[9px] mt-0.5">{label}</p>
                   </div>
                 ))}
               </div>
@@ -195,7 +194,7 @@ export default function HRTalentPool() {
                     </span>
                   ))}
                   {item.skills.length > 3 && (
-                    <span className="text-[10px] text-[#585b70]">
+                    <span className="text-[10px] text-[#7f849c]">
                       +{item.skills.length - 3}
                     </span>
                   )}
@@ -208,7 +207,7 @@ export default function HRTalentPool() {
         {filtered.length === 0 && (
           <div className="col-span-3 bg-[#1e1e2e] border border-[#313244] rounded-2xl py-16 text-center">
             <UserCheck size={32} className="mx-auto mb-3 text-[#313244]" />
-            <p className="text-sm text-[#9399b2]">
+            <p className="text-sm text-[#bac2de]">
               No certified candidates yet
             </p>
           </div>
@@ -258,7 +257,7 @@ export default function HRTalentPool() {
                             </p>
                           )}
                           {profile.profile?.location && (
-                            <p className="text-[#585b70] text-xs flex items-center gap-1 mt-1">
+                            <p className="text-[#bac2de] text-xs flex items-center gap-1 mt-1">
                               <MapPin size={10} />
                               {profile.profile.location}
                             </p>
@@ -269,7 +268,7 @@ export default function HRTalentPool() {
                                 href={profile.profile.github}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#9399b2] hover:text-[#cdd6f4]"
+                                className="text-[#bac2de] hover:text-[#cdd6f4]"
                               >
                                 <GitBranch size={14} />
                               </a>
@@ -279,7 +278,7 @@ export default function HRTalentPool() {
                                 href={profile.profile.linkedin}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#9399b2] hover:text-[#89b4fa]"
+                                className="text-[#bac2de] hover:text-[#89b4fa]"
                               >
                                 <Link size={14} />
                               </a>
@@ -289,7 +288,7 @@ export default function HRTalentPool() {
                                 href={profile.profile.website}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#9399b2] hover:text-[#a6e3a1]"
+                                className="text-[#bac2de] hover:text-[#a6e3a1]"
                               >
                                 <Globe size={14} />
                               </a>
@@ -299,14 +298,14 @@ export default function HRTalentPool() {
                       </div>
                       <button
                         onClick={() => setProfile(null)}
-                        className="text-[#585b70] hover:text-[#cdd6f4] transition p-1"
+                        className="text-[#7f849c] hover:text-[#cdd6f4] transition p-1"
                       >
                         <X size={18} />
                       </button>
                     </div>
 
                     {profile.profile?.bio && (
-                      <p className="text-[#9399b2] text-sm mt-4 leading-relaxed">
+                      <p className="text-[#bac2de] text-sm mt-4 leading-relaxed">
                         {profile.profile.bio}
                       </p>
                     )}
@@ -357,14 +356,14 @@ export default function HRTalentPool() {
                           <p className={`text-xl font-bold ${color}`}>
                             {value ?? 0}
                           </p>
-                          <p className="text-[#585b70] text-xs mt-1">{label}</p>
+                          <p className="text-[#7f849c] text-xs mt-1">{label}</p>
                         </div>
                       ))}
                     </div>
 
                     {/* Platform Certificates */}
                     <div>
-                      <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
                         <GraduationCap size={12} className="text-[#a6e3a1]" />
                         Platform Certificates
                         <span className="ml-auto text-[#a6e3a1] font-bold normal-case">
@@ -388,18 +387,18 @@ export default function HRTalentPool() {
                                 <p className="text-[#cdd6f4] text-xs font-medium truncate">
                                   {cert.course_title}
                                 </p>
-                                <p className="text-[#585b70] text-[10px] font-mono">
+                                <p className="text-[#7f849c] text-[10px] font-mono">
                                   {cert.certificate_id}
                                 </p>
                               </div>
-                              <span className="text-[#9399b2] text-[10px] flex-shrink-0">
+                              <span className="text-[#bac2de] text-[10px] flex-shrink-0">
                                 {new Date(cert.issued_at).toLocaleDateString()}
                               </span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-[#585b70] text-xs bg-[#11111b] rounded-xl px-3 py-4 text-center">
+                        <p className="text-[#7f849c] text-xs bg-[#11111b] rounded-xl px-3 py-4 text-center">
                           No platform certificates yet
                         </p>
                       )}
@@ -408,7 +407,7 @@ export default function HRTalentPool() {
                     {/* Extra Certificates (uploaded) */}
                     {profile.extra_certificates?.length > 0 && (
                       <div>
-                        <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
                           <GraduationCap size={12} className="text-[#cba6f7]" />
                           External Certificates
                           <span className="ml-auto text-[#cba6f7] font-bold normal-case">
@@ -432,7 +431,7 @@ export default function HRTalentPool() {
                                   {cert.title}
                                 </p>
                                 {cert.issuer && (
-                                  <p className="text-[#585b70] text-[10px]">
+                                  <p className="text-[#7f849c] text-[10px]">
                                     {cert.issuer}
                                   </p>
                                 )}
@@ -456,7 +455,7 @@ export default function HRTalentPool() {
                     {/* Projects */}
                     {profile.projects?.length > 0 && (
                       <div>
-                        <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
                           <Code size={12} className="text-[#cba6f7]" />
                           Projects
                           <span className="ml-auto text-[#cba6f7] font-bold normal-case">
@@ -475,7 +474,7 @@ export default function HRTalentPool() {
                                     {p.title}
                                   </p>
                                   {p.description && (
-                                    <p className="text-[#585b70] text-[11px] mt-0.5 line-clamp-2">
+                                    <p className="text-[#7f849c] text-[11px] mt-0.5 line-clamp-2">
                                       {p.description}
                                     </p>
                                   )}
@@ -498,7 +497,7 @@ export default function HRTalentPool() {
                                       href={p.github_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-[#9399b2] hover:text-[#cdd6f4]"
+                                      className="text-[#bac2de] hover:text-[#cdd6f4]"
                                     >
                                       <GitBranch size={13} />
                                     </a>
@@ -508,7 +507,7 @@ export default function HRTalentPool() {
                                       href={p.live_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-[#9399b2] hover:text-[#a6e3a1]"
+                                      className="text-[#bac2de] hover:text-[#a6e3a1]"
                                     >
                                       <Globe size={13} />
                                     </a>
@@ -524,7 +523,7 @@ export default function HRTalentPool() {
                     {/* Event participations */}
                     {profile.events?.length > 0 && (
                       <div>
-                        <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
                           <Calendar size={12} className="text-[#f38ba8]" />
                           Event Participation
                           <span className="ml-auto text-[#f38ba8] font-bold normal-case">
@@ -541,7 +540,7 @@ export default function HRTalentPool() {
                                 <p className="text-[#cdd6f4] text-xs font-medium">
                                   {e.title}
                                 </p>
-                                <p className="text-[#585b70] text-[10px]">
+                                <p className="text-[#7f849c] text-[10px]">
                                   {new Date(e.start_date).toLocaleDateString()}
                                 </p>
                               </div>
@@ -570,7 +569,7 @@ export default function HRTalentPool() {
                     {/* Application history */}
                     {profile.application_history?.length > 0 && (
                       <div>
-                        <p className="text-[#9399b2] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <p className="text-[#bac2de] text-xs font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
                           <Briefcase size={12} />
                           Application History
                         </p>
@@ -584,7 +583,7 @@ export default function HRTalentPool() {
                                 <p className="text-[#cdd6f4] text-xs font-medium">
                                   {a.job}
                                 </p>
-                                <p className="text-[#585b70] text-[10px]">
+                                <p className="text-[#7f849c] text-[10px]">
                                   {a.company}
                                 </p>
                               </div>

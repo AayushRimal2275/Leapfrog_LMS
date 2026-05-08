@@ -189,7 +189,7 @@ export default function AdminEvents() {
                 >
                   {e.event_type}
                 </span>
-                <span className="text-[10px] text-[#585b70] capitalize">
+                <span className="text-[10px] text-[#a0a8e4] capitalize">
                   {e.status}
                 </span>
               </div>
@@ -197,15 +197,15 @@ export default function AdminEvents() {
                 {e.title}
               </h3>
               <div className="space-y-1 mb-3">
-                <p className="text-[#585b70] text-xs flex items-center gap-1">
+                <p className="text-[#acadb1] text-xs flex items-center gap-1">
                   <Clock size={10} />
                   {new Date(e.start_date).toLocaleDateString()}
                 </p>
-                <p className="text-[#585b70] text-xs flex items-center gap-1">
+                <p className="text-[#acadb1] text-xs flex items-center gap-1">
                   <MapPin size={10} />
                   {e.location}
                 </p>
-                <p className="text-[#585b70] text-xs flex items-center gap-1">
+                <p className="text-[#adb8b8] text-xs flex items-center gap-1">
                   <Users size={10} />
                   {e.registered_count}/{e.max_participants} registered
                 </p>

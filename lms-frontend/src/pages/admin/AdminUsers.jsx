@@ -156,10 +156,10 @@ export default function AdminUsers() {
                       alt=""
                     />
                     <div>
-                      <p className="text-[#cdd6f4] font-medium">
+                      <p className="text-[#f2f5fd] font-medium">
                         {u.first_name} {u.last_name}
                       </p>
-                      <p className="text-[#585b70] text-xs">
+                      <p className="text-[#adb8b8] text-xs">
                         @{u.username?.split("@")[0]}
                       </p>
                     </div>
@@ -213,7 +213,7 @@ export default function AdminUsers() {
                     {u.is_active !== false ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className="px-5 py-3 text-[#585b70] text-xs">
+                <td className="px-5 py-3 text-[#aeafb6] text-xs">
                   {u.date_joined
                     ? new Date(u.date_joined).toLocaleDateString()
                     : "—"}

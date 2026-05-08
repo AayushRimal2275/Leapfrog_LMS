@@ -173,7 +173,7 @@ export default function HRJobs() {
                     </span>
                   )}
                 </div>
-                <p className="text-[#9399b2] text-xs mt-0.5">
+                <p className="text-[#b1b2b8] text-xs mt-0.5">
                   {job.company} · {job.location}
                 </p>
                 {job.salary_range && (

@@ -159,7 +159,7 @@ export default function AdminProfile() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#cdd6f4]">Admin Profile</h1>
-          <p className="text-[#9399b2] text-sm mt-0.5">
+          <p className="text-[#b4b7c4] text-sm mt-0.5">
             {editing ? "Editing your profile" : "Your administrator account"}
           </p>
         </div>
@@ -223,7 +223,7 @@ export default function AdminProfile() {
               className="bg-[#1e1e2e] border border-[#313244] rounded-xl p-3 text-center"
             >
               <p className={`text-xl font-bold ${color}`}>{value}</p>
-              <p className="text-[#585b70] text-xs mt-1">{label}</p>
+              <p className="text-[#909091] text-xs mt-1">{label}</p>
             </div>
           ))}
         </div>

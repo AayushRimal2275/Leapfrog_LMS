@@ -81,8 +81,15 @@ export default function HRDashboard() {
         <h1 className="text-2xl font-bold text-[#cdd6f4]">
           HR Dashboard <span className="text-[#89dceb]">👥</span>
         </h1>
-        <p className="text-[#9399b2] text-sm mt-1">
-          Welcome back, {user?.first_name || user?.username}
+
+        <p className="text-sm font-semibold text-[#cdd6f4]">
+          Good{" "}
+          {new Date().getHours() < 12
+            ? "morning"
+            : new Date().getHours() < 17
+              ? "afternoon"
+              : "evening"}
+          , <span className="text-[#89dceb]">{user.first_name}</span> 👋
         </p>
       </div>
 
@@ -104,7 +111,7 @@ export default function HRDashboard() {
               </div>
             </div>
             <p className="text-3xl font-bold text-[#cdd6f4]">{value}</p>
-            <p className="text-[10px] text-[#585b70] mt-2 group-hover:text-[#9399b2] transition flex items-center gap-1">
+            <p className="text-[10px] text-[#76f0ea] mt-2 group-hover:text-[#9399b2] transition flex items-center gap-1">
               View <ArrowRight size={10} />
             </p>
           </Link>
@@ -170,7 +177,7 @@ export default function HRDashboard() {
               return (
                 <div key={name}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="capitalize text-[#9399b2] text-xs font-medium">
+                    <span className="capitalize text-[#babdc9] text-xs font-medium">
                       {name}
                     </span>
                     <span className="text-[#cdd6f4] text-xs font-semibold">
